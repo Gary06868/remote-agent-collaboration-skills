@@ -64,9 +64,9 @@
 
 - [x] Run unit, smoke, docs, asset, demo, privacy, and packaging checks.
 - [x] Run install-chain tests using actual local Codex CLI capabilities.
-- [ ] Initialize independent Git repository under `<PROJECT_ROOT>`.
-- [ ] Explicitly stage files; do not use blind `git add .`.
-- [ ] Commit.
-- [ ] Create public GitHub repository `remote-agent-collaboration-skills`.
+- [x] Initialize independent Git repository under `<PROJECT_ROOT>`.
+- [x] Explicitly stage files; do not use blind `git add .`.
+- [x] Commit.
+- [x] Create public GitHub repository `remote-agent-collaboration-skills`.
 - [ ] Configure `origin`, push `main`, and verify local and remote SHAs.
 - [ ] Final report lists Phase 0 result, `role_lock_enforced`, `enforcement_mode`, role-conflict tests, concurrent-thread test, resume test, subagent prompt/write blocking, hook trust status, install commands, marketplace/plugin/Skill names, doctor JSON, compaction hash result, privacy scan result, README/demo paths, local commit SHA, GitHub URL, remote SHA, failures, and known limitations.

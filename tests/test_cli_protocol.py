@@ -79,6 +79,40 @@ def test_member_task_and_compaction_flow(tmp_path, monkeypatch):
     assert payload["manifest"]["archive_sha256"]
 
 
+def test_handoff_flow_between_members(tmp_path, monkeypatch):
+    setup_project(tmp_path, monkeypatch)
+    assert run(["member", "add", "--session-id", "lead-thread", "--actor-id", "m1", "--role", "member", "--modules", "docs"], tmp_path, monkeypatch)[0] == 0
+    assert run(["member", "add", "--session-id", "lead-thread", "--actor-id", "m2", "--role", "member", "--modules", "docs"], tmp_path, monkeypatch)[0] == 0
+    assert run(["module", "add", "--session-id", "lead-thread", "--module-id", "docs", "--members", "m1", "m2", "--allowed-paths", "docs"], tmp_path, monkeypatch)[0] == 0
+    assert run(["task", "create", "--session-id", "lead-thread", "--task-id", "t1", "--title", "Docs", "--module-id", "docs", "--owner", "m1"], tmp_path, monkeypatch)[0] == 0
+    assert run(["--session-id", "m1-thread", "session", "activate", "--role", "member", "--skill", "team-member-collaboration", "--actor-id", "m1"], tmp_path, monkeypatch)[0] == 0
+    assert run(["--session-id", "m2-thread", "session", "activate", "--role", "member", "--skill", "team-member-collaboration", "--actor-id", "m2"], tmp_path, monkeypatch)[0] == 0
+    assert run([
+        "handoff",
+        "create",
+        "--session-id",
+        "m1-thread",
+        "--handoff-id",
+        "h1",
+        "--task-id",
+        "t1",
+        "--module-id",
+        "docs",
+        "--from-actor",
+        "m1",
+        "--to-actor",
+        "m2",
+        "--summary",
+        "Transfer docs task",
+    ], tmp_path, monkeypatch)[0] == 0
+    code, payload = run(["handoff", "accept", "--session-id", "m2-thread", "--handoff-id", "h1"], tmp_path, monkeypatch)
+    assert code == 0, payload
+    assert payload["handoff"]["status"] == "accepted"
+    code, payload = run(["handoff", "complete", "--session-id", "m1-thread", "--handoff-id", "h1", "--note", "Context transferred"], tmp_path, monkeypatch)
+    assert code == 0, payload
+    assert payload["handoff"]["status"] == "completed"
+
+
 def test_doctor_failed_core_gate(tmp_path, monkeypatch):
     code, payload = run(["doctor"], tmp_path, monkeypatch)
     assert code == 2

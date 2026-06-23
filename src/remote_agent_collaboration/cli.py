@@ -356,6 +356,69 @@ def request_create(args: argparse.Namespace) -> dict:
     return {"ok": True, "message": f"Created request {args.request_id}.", "request": req}
 
 
+def handoff_path(root: Path, bucket: str, handoff_id: str) -> Path:
+    return collab_dir(root) / "handoffs" / bucket / f"{handoff_id}.json"
+
+
+def find_handoff(root: Path, handoff_id: str) -> tuple[Path, dict]:
+    for bucket in ["pending", "accepted", "rejected", "completed"]:
+        path = handoff_path(root, bucket, handoff_id)
+        handoff = read_json(path)
+        if handoff:
+            return path, handoff
+    raise CollabError("HANDOFF_NOT_FOUND", f"Handoff not found: {handoff_id}")
+
+
+def handoff_create(args: argparse.Namespace) -> dict:
+    root, lock = command_lock(args, {"lead", "member"})
+    if lock["role"] == "member" and args.from_actor != lock["actor_id"]:
+        raise CollabError(ROLE_NOT_AUTHORIZED, "Members can only create handoffs from themselves.")
+    if handoff_path(root, "pending", args.handoff_id).exists():
+        raise CollabError("HANDOFF_EXISTS", f"Handoff already exists: {args.handoff_id}")
+    handoff = {
+        "schema_version": SCHEMA_VERSION,
+        "handoff_id": args.handoff_id,
+        "task_id": args.task_id,
+        "module_id": args.module_id,
+        "from_actor": args.from_actor,
+        "to_actor": args.to_actor,
+        "status": "pending",
+        "summary": args.summary,
+        "created_by": lock["actor_id"],
+        "timestamps": {"created_at_utc": utc_now()},
+    }
+    atomic_write_json(handoff_path(root, "pending", args.handoff_id), handoff)
+    audit(root, lock["actor_id"], lock["role"], "handoff_create", f"Created handoff {args.handoff_id}.", module_id=args.module_id, task_id=args.task_id)
+    return {"ok": True, "message": f"Created handoff {args.handoff_id}.", "handoff": handoff}
+
+
+def handoff_transition(args: argparse.Namespace) -> dict:
+    root, lock = command_lock(args, {"lead", "member"})
+    path, handoff = find_handoff(root, args.handoff_id)
+    old = handoff["status"]
+    transitions = {
+        "accept": {"pending": "accepted"},
+        "reject": {"pending": "rejected"},
+        "complete": {"accepted": "completed"},
+    }
+    if old not in transitions[args.action]:
+        raise CollabError(STATE_TRANSITION_DENIED, f"Cannot {args.action} from {old}.")
+    if lock["role"] == "member" and args.action in {"accept", "reject"} and handoff.get("to_actor") != lock["actor_id"]:
+        raise CollabError(ROLE_NOT_AUTHORIZED, "Members can only accept or reject handoffs assigned to them.")
+    if lock["role"] == "member" and args.action == "complete" and handoff.get("from_actor") != lock["actor_id"] and handoff.get("to_actor") != lock["actor_id"]:
+        raise CollabError(ROLE_NOT_AUTHORIZED, "Members can only complete handoffs they participate in.")
+    handoff["status"] = transitions[args.action][old]
+    handoff.setdefault("timestamps", {})[f"{args.action}_at_utc"] = utc_now()
+    if args.note:
+        handoff.setdefault("notes", []).append({"actor_id": lock["actor_id"], "note": args.note, "created_at_utc": utc_now()})
+    dest = handoff_path(root, handoff["status"], args.handoff_id)
+    atomic_write_json(dest, handoff)
+    if dest != path and path.exists():
+        path.unlink()
+    audit(root, lock["actor_id"], lock["role"], f"handoff_{args.action}", f"{args.action} handoff {args.handoff_id}.", module_id=handoff.get("module_id"), task_id=handoff.get("task_id"))
+    return {"ok": True, "message": f"Handoff {args.handoff_id} -> {handoff['status']}.", "handoff": handoff}
+
+
 def git_preflight(args: argparse.Namespace) -> dict:
     root = find_project_root(require=False)
     checks: dict[str, Any] = {"is_git_repo": (root / ".git").exists()}
@@ -410,6 +473,39 @@ PRIVATE_SUBSTRINGS = [
 PRIVATE_NAME_REGEXES = [re.compile(r"\b" + name + r"\b") for name in ["Ga" + "ry", "Et" + "han", "Ben" + "nie", "Har" + "ry"]]
 
 
+def scan_private_text(label: str, text: str, findings: list[dict]) -> None:
+    for pat in PRIVATE_SUBSTRINGS:
+        if pat in text:
+            findings.append({"path": label, "pattern": pat})
+    for regex in PRIVATE_NAME_REGEXES:
+        if regex.search(text):
+            findings.append({"path": label, "pattern": regex.pattern})
+
+
+def scan_git_history(root: Path, include: set[str], findings: list[dict]) -> bool:
+    git_dir = root / ".git"
+    if not git_dir.exists():
+        return False
+    revs = subprocess.run(["git", "rev-list", "--all"], cwd=root, check=False, text=True, capture_output=True)
+    if revs.returncode != 0:
+        return False
+    history_scanned = False
+    for commit in [line.strip() for line in revs.stdout.splitlines() if line.strip()]:
+        files = subprocess.run(["git", "ls-tree", "-r", "--name-only", commit], cwd=root, check=False, text=True, capture_output=True)
+        if files.returncode != 0:
+            continue
+        for rel in files.stdout.splitlines():
+            path = Path(rel)
+            if path.suffix.lower() not in include:
+                continue
+            blob = subprocess.run(["git", "show", f"{commit}:{rel}"], cwd=root, check=False, text=True, capture_output=True, encoding="utf-8", errors="ignore")
+            if blob.returncode != 0:
+                continue
+            history_scanned = True
+            scan_private_text(f"git:{commit[:12]}:{rel}", blob.stdout, findings)
+    return history_scanned
+
+
 def privacy_scan(args: argparse.Namespace) -> dict:
     root = Path.cwd().resolve()
     include = {".md", ".json", ".yaml", ".yml", ".py", ".ps1", ".sh", ".svg", ".tape", ".toml"}
@@ -420,13 +516,14 @@ def privacy_scan(args: argparse.Namespace) -> dict:
         if path.is_dir() or path.suffix.lower() not in include:
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
-        for pat in PRIVATE_SUBSTRINGS:
-            if pat in text:
-                findings.append({"path": str(path.relative_to(root)), "pattern": pat})
-        for regex in PRIVATE_NAME_REGEXES:
-            if regex.search(text):
-                findings.append({"path": str(path.relative_to(root)), "pattern": regex.pattern})
-    return {"ok": not findings, "message": "Privacy scan passed." if not findings else "Privacy scan failed.", "findings": findings}
+        scan_private_text(str(path.relative_to(root)), text, findings)
+    history_scanned = scan_git_history(root, include, findings)
+    return {
+        "ok": not findings,
+        "message": "Privacy scan passed." if not findings else "Privacy scan failed.",
+        "findings": findings,
+        "history_scanned": history_scanned,
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -538,6 +635,22 @@ def build_parser() -> argparse.ArgumentParser:
     rc.add_argument("--type", required=True)
     rc.add_argument("--summary", required=True)
     rc.set_defaults(func=request_create)
+
+    handoff = sub.add_parser("handoff")
+    hs = handoff.add_subparsers(dest="handoff_cmd", required=True)
+    hc = hs.add_parser("create")
+    hc.add_argument("--handoff-id", required=True)
+    hc.add_argument("--task-id", required=True)
+    hc.add_argument("--module-id", required=True)
+    hc.add_argument("--from-actor", required=True)
+    hc.add_argument("--to-actor", required=True)
+    hc.add_argument("--summary", required=True)
+    hc.set_defaults(func=handoff_create)
+    for action in ["accept", "reject", "complete"]:
+        hp = hs.add_parser(action)
+        hp.add_argument("--handoff-id", required=True)
+        hp.add_argument("--note")
+        hp.set_defaults(func=handoff_transition, action=action)
 
     gp = sub.add_parser("git")
     gs = gp.add_subparsers(dest="git_cmd", required=True)
