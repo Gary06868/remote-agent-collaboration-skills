@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -32,6 +33,46 @@ def _session_id(data: dict) -> str | None:
 
 def _prompt(data: dict) -> str:
     return str(data.get("prompt") or data.get("user_prompt") or data.get("message") or "")
+
+
+def _tool_input(data: dict) -> dict:
+    value = data.get("tool_input") or data.get("toolInput") or {}
+    return value if isinstance(value, dict) else {}
+
+
+def _inject_session_id(command: str, session_id: str) -> tuple[str, bool]:
+    if "--session-id" in command or "RAC_SESSION_ID" in command:
+        return command, False
+    if not re.fullmatch(r"[A-Za-z0-9_.:-]+", session_id):
+        return command, False
+    patterns = [
+        (r"(?<![\w.-])collabctl(?![\w.-])", f"collabctl --session-id {session_id}"),
+        (
+            r"(?<![\w.-])python\s+-m\s+remote_agent_collaboration\.cli(?![\w.-])",
+            f"python -m remote_agent_collaboration.cli --session-id {session_id}",
+        ),
+    ]
+    for pattern, replacement in patterns:
+        updated, count = re.subn(pattern, replacement, command, count=1)
+        if count:
+            return updated, True
+    return command, False
+
+
+def _rewrite_tool_input_for_session(data: dict, session_id: str) -> tuple[dict | None, str]:
+    tool_input = _tool_input(data)
+    command = tool_input.get("command") or tool_input.get("cmd")
+    if not isinstance(command, str) or "collabctl" not in command and "remote_agent_collaboration.cli" not in command:
+        return None, "not_collabctl"
+    updated, changed = _inject_session_id(command, session_id)
+    if not changed:
+        return None, "already_has_context_or_unsupported"
+    rewritten = dict(tool_input)
+    if "command" in rewritten:
+        rewritten["command"] = updated
+    else:
+        rewritten["cmd"] = updated
+    return rewritten, "command_rewrite"
 
 
 def _record(root: Path, event: str, data: dict, result: dict) -> None:
@@ -71,8 +112,11 @@ def pre_tool_use() -> int:
     sid = _session_id(data)
     result: dict
     if sid:
-        os.environ["RAC_SESSION_ID"] = sid
-        result = {"continue": True, "session_id_available": True}
+        rewritten, mode = _rewrite_tool_input_for_session(data, sid)
+        result = {"continue": True, "session_id_available": True, "session_context_mode": mode}
+        if rewritten is not None:
+            result["tool_input"] = rewritten
+            result["modified_tool_input"] = rewritten
     else:
         result = {"continue": True, "session_id_available": False, "warning": "SESSION_CONTEXT_MISSING"}
     _record(root, "PreToolUse", data, result)
