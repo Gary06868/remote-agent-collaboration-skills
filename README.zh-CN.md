@@ -46,6 +46,12 @@
    codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
    ```
 
+   如果当前网络阻止 HTTPS clone，可使用已测试通过的 SSH over 443 备用路径：
+
+   ```bash
+   codex plugin marketplace add ssh://git@ssh.github.com:443/Gary06868/remote-agent-collaboration-skills.git
+   ```
+
 2. 打开 `/plugins`，安装 **Remote Agent Collaboration**。
 3. 验证两个 Skill 都已安装且名称不同：
    - `team-lead-collaboration`

@@ -15,6 +15,9 @@
   "installation_commands": [
     "codex plugin marketplace add Gary06868/remote-agent-collaboration-skills"
   ],
+  "fallback_installation_commands": [
+    "codex plugin marketplace add ssh://git@ssh.github.com:443/Gary06868/remote-agent-collaboration-skills.git"
+  ],
   "interactive_install": [
     "Open /plugins",
     "Install Remote Agent Collaboration",

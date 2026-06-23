@@ -69,4 +69,4 @@
 - [x] Commit.
 - [x] Create public GitHub repository `remote-agent-collaboration-skills`.
 - [x] Configure `origin`, push `main`, and verify local and remote SHAs.
-- [ ] Final report lists Phase 0 result, `role_lock_enforced`, `enforcement_mode`, role-conflict tests, concurrent-thread test, resume test, subagent prompt/write blocking, hook trust status, install commands, marketplace/plugin/Skill names, doctor JSON, compaction hash result, privacy scan result, README/demo paths, local commit SHA, GitHub URL, remote SHA, failures, and known limitations.
+- [x] Final report lists Phase 0 result, `role_lock_enforced`, `enforcement_mode`, role-conflict tests, concurrent-thread test, resume test, subagent prompt/write blocking, hook trust status, install commands, marketplace/plugin/Skill names, doctor JSON, compaction hash result, privacy scan result, README/demo paths, local commit SHA, GitHub URL, remote SHA, failures, and known limitations.

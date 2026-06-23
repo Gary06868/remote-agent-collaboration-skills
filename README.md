@@ -50,6 +50,12 @@ Use this section without reading the full README.
    codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
    ```
 
+   If HTTPS clone is blocked on the current network, use the tested SSH-over-443 fallback:
+
+   ```bash
+   codex plugin marketplace add ssh://git@ssh.github.com:443/Gary06868/remote-agent-collaboration-skills.git
+   ```
+
 2. Open `/plugins` and install **Remote Agent Collaboration**.
 3. Verify both Skills are installed and distinct:
    - `team-lead-collaboration`
