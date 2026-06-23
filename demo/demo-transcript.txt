@@ -1,0 +1,22 @@
+$ collabctl init --project-id demo --yes
+Collaboration project initialized.
+$ collabctl actor bootstrap --actor-id lead --role lead --yes
+Bootstrapped lead actor lead.
+$ collabctl session activate --session-id thread-lead --role lead --skill team-lead-collaboration --actor-id lead
+Session active as lead.
+$ collabctl session activate --session-id thread-lead --role member --skill team-member-collaboration --actor-id member
+ROLE_SESSION_CONFLICT: Session is already bound to lead.
+$ collabctl member add --session-id thread-lead --actor-id member --role member --modules docs
+Added member.
+$ collabctl session activate --session-id thread-member --role member --skill team-member-collaboration --actor-id member
+Session active as member.
+$ collabctl announce publish --session-id thread-lead --announcement-id ann-1 --title "Release plan" --summary "Read before work" --acknowledgement-required
+Published announcement ann-1.
+$ collabctl announce acknowledge --session-id thread-member --announcement-id ann-1
+Acknowledged ann-1.
+$ collabctl task start --session-id thread-member --task-id task-1
+Task task-1 -> in_progress.
+$ collabctl request create --session-id thread-member --request-id req-compact --type log_compaction --summary "Please compact logs"
+Created request req-compact.
+$ collabctl log compact --session-id thread-lead
+Archive and SHA-256 verified.

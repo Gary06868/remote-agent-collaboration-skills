@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Collaboration Lead icon">
+  <rect width="128" height="128" rx="24" fill="#0F172A"/>
+  <path d="M64 18l12 28 30 3-23 20 7 30-26-16-26 16 7-30-23-20 30-3 12-28z" fill="#38BDF8"/>
+  <circle cx="64" cy="64" r="14" fill="#F8FAFC"/>
+</svg>

@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "marketplace_name": "remote-agent-collaboration-skills",
+  "plugins": [
+    {
+      "name": "remote-agent-collaboration",
+      "path": "../.codex-plugin",
+      "display_name": "Remote Agent Collaboration"
+    }
+  ]
+}

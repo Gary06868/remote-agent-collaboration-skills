@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420" role="img" aria-label="Architecture diagram">
+  <rect width="980" height="420" fill="#F8FAFC"/>
+  <text x="40" y="58" font-size="30" font-family="Arial" font-weight="700" fill="#0F172A">Architecture</text>
+  <g fill="#E0F2FE" stroke="#0284C7" stroke-width="2">
+    <rect x="60" y="110" width="230" height="90" rx="10"/>
+    <rect x="375" y="110" width="230" height="90" rx="10"/>
+    <rect x="690" y="110" width="230" height="90" rx="10"/>
+  </g>
+  <text x="95" y="160" font-size="20" font-family="Arial" fill="#0F172A">Explicit Skills</text>
+  <text x="420" y="160" font-size="20" font-family="Arial" fill="#0F172A">Trusted Hooks</text>
+  <text x="745" y="160" font-size="20" font-family="Arial" fill="#0F172A">collabctl CLI</text>
+  <path d="M292 155h75M607 155h75" stroke="#334155" stroke-width="5" stroke-linecap="round"/>
+  <path d="M350 138l22 17-22 17M665 138l22 17-22 17" fill="none" stroke="#334155" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="210" y="280" width="560" height="70" rx="10" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/>
+  <text x="285" y="323" font-size="22" font-family="Arial" fill="#14532D">.collaboration protocol files + local session locks</text>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="524" viewBox="0 0 960 524"><rect width="960" height="524" fill="#0f172a"/><text x="24" y="38" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl init --project-id demo --yes</text>
+<text x="24" y="60" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Collaboration project initialized.</text>
+<text x="24" y="82" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl actor bootstrap --actor-id lead --role lead --yes</text>
+<text x="24" y="104" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Bootstrapped lead actor lead.</text>
+<text x="24" y="126" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl session activate --session-id thread-lead --role lead --skill team-lead-collaboration --actor-id lead</text>
+<text x="24" y="148" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Session active as lead.</text>
+<text x="24" y="170" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl session activate --session-id thread-lead --role member --skill team-member-collaboration --actor-id member</text>
+<text x="24" y="192" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">ROLE_SESSION_CONFLICT: Session is already bound to lead.</text>
+<text x="24" y="214" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl member add --session-id thread-lead --actor-id member --role member --modules docs</text>
+<text x="24" y="236" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Added member.</text>
+<text x="24" y="258" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl session activate --session-id thread-member --role member --skill team-member-collaboration --actor-id member</text>
+<text x="24" y="280" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Session active as member.</text>
+<text x="24" y="302" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl announce publish --session-id thread-lead --announcement-id ann-1 --title "Release plan" --summary "Read before work" --acknowledgement-required</text>
+<text x="24" y="324" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Published announcement ann-1.</text>
+<text x="24" y="346" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl announce acknowledge --session-id thread-member --announcement-id ann-1</text>
+<text x="24" y="368" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Acknowledged ann-1.</text>
+<text x="24" y="390" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl task start --session-id thread-member --task-id task-1</text>
+<text x="24" y="412" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Task task-1 -> in_progress.</text>
+<text x="24" y="434" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl request create --session-id thread-member --request-id req-compact --type log_compaction --summary "Please compact logs"</text>
+<text x="24" y="456" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Created request req-compact.</text>
+<text x="24" y="478" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">$ collabctl log compact --session-id thread-lead</text>
+<text x="24" y="500" fill="#d1fae5" font-size="14" font-family="Consolas, monospace">Archive and SHA-256 verified.</text></svg>

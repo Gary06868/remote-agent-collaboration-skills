@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "repository": "Gary06868/remote-agent-collaboration-skills",
+  "plugin": "remote-agent-collaboration",
+  "marketplace_name": "remote-agent-collaboration-skills",
+  "bundled_skills": [
+    "team-lead-collaboration",
+    "team-member-collaboration"
+  ],
+  "install_both": true,
+  "role_selected_at_invocation": true,
+  "one_role_per_session": true,
+  "installation_commands": [
+    "codex plugin marketplace add Gary06868/remote-agent-collaboration-skills"
+  ],
+  "interactive_install": [
+    "Open /plugins",
+    "Install Remote Agent Collaboration",
+    "Open /hooks and trust hooks",
+    "Start a new Codex thread"
+  ],
+  "doctor_command": "collabctl doctor --json",
+  "explicit_invocation_examples": [
+    "$team-lead-collaboration Initialize and govern collaboration for this project as the registered lead actor.",
+    "$team-member-collaboration Read current announcements, accept my assigned task, and work only inside my authorized module."
+  ],
+  "conflict_behavior": "Opposite role in the same session returns ROLE_SESSION_CONFLICT.",
+  "security_notes": "Hooks are guardrails, not a sandbox. collabctl fails closed without session_id."
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "name": "remote-agent-collaboration",
+  "display_name": "Remote Agent Collaboration",
+  "version": "0.1.0",
+  "description": "Install both collaboration skills and activate exactly one role per Codex thread.",
+  "skills": [
+    {
+      "path": "../skills/team-lead-collaboration"
+    },
+    {
+      "path": "../skills/team-member-collaboration"
+    }
+  ],
+  "hooks": {
+    "path": "../hooks/hooks.json"
+  },
+  "license": "MIT"
+}
