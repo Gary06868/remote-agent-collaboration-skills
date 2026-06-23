@@ -1,19 +1,46 @@
 {
-  "schema_version": "1.0",
   "name": "remote-agent-collaboration",
-  "display_name": "Remote Agent Collaboration",
   "version": "0.1.0",
   "description": "Install both collaboration skills and activate exactly one role per Codex thread.",
-  "skills": [
-    {
-      "path": "../skills/team-lead-collaboration"
-    },
-    {
-      "path": "../skills/team-member-collaboration"
-    }
+  "author": {
+    "name": "Remote Agent Collaboration Maintainers"
+  },
+  "homepage": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+  "repository": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "skills",
+    "collaboration",
+    "role-lock",
+    "hooks"
   ],
+  "skills": "../skills/",
   "hooks": {
     "path": "../hooks/hooks.json"
   },
-  "license": "MIT"
+  "interface": {
+    "displayName": "Remote Agent Collaboration",
+    "shortDescription": "Two explicit collaboration roles with fail-closed local protocol checks",
+    "longDescription": "Remote Agent Collaboration installs lead and member skills for Codex. Hooks can provide session context when trusted and observed; collabctl remains the deterministic local enforcement layer and fails closed without a real session_id.",
+    "developerName": "Remote Agent Collaboration Maintainers",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+    "privacyPolicyURL": "https://github.com/Gary06868/remote-agent-collaboration-skills/blob/main/SECURITY.md",
+    "termsOfServiceURL": "https://github.com/Gary06868/remote-agent-collaboration-skills/blob/main/LICENSE",
+    "defaultPrompt": [
+      "$team-lead-collaboration Initialize and govern collaboration for this project.",
+      "$team-member-collaboration Read current announcements and work only inside my assigned module."
+    ],
+    "brandColor": "#2563EB",
+    "logo": "../docs/assets/hero.svg",
+    "screenshots": [
+      "../docs/assets/demo-poster.png"
+    ]
+  }
 }

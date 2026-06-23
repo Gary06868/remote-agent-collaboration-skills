@@ -1,11 +1,21 @@
 {
-  "schema_version": "1.0",
-  "marketplace_name": "remote-agent-collaboration-skills",
+  "name": "remote-agent-collaboration-skills",
+  "interface": {
+    "displayName": "Remote Agent Collaboration Skills"
+  },
   "plugins": [
     {
       "name": "remote-agent-collaboration",
-      "path": "../.codex-plugin",
-      "display_name": "Remote Agent Collaboration"
+      "source": {
+        "source": "local",
+        "path": "../.codex-plugin"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL",
+        "products": ["CODEX"]
+      },
+      "category": "Developer Tools"
     }
   ]
 }
