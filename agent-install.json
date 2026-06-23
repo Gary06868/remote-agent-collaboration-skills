@@ -3,6 +3,8 @@
   "repository": "Gary06868/remote-agent-collaboration-skills",
   "plugin": "remote-agent-collaboration",
   "marketplace_name": "remote-agent-collaboration-skills",
+  "target_audience": "Small teams, small companies, open-source maintainers, and vibe-coding groups using multiple Codex threads in one repository.",
+  "purpose": "Coordinate one lead agent and one or more member agents through explicit roles, task state, module ownership, announcements, handoffs, append-only logs, and fail-closed role checks.",
   "bundled_skills": [
     "team-lead-collaboration",
     "team-member-collaboration"

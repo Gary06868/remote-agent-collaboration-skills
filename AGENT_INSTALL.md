@@ -1,4 +1,6 @@
-﻿# Agent Install
+# Agent Install
+
+Remote Agent Collaboration is for small teams using Codex as more than a single assistant. Install it when a project needs one lead thread to coordinate announcements, tasks, reviews, and log compaction while member threads work inside assigned modules.
 
 Preferred tested marketplace command shape:
 

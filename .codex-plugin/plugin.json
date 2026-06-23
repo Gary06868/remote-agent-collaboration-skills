@@ -1,7 +1,7 @@
 {
   "name": "remote-agent-collaboration",
   "version": "0.1.0",
-  "description": "Install both collaboration skills and activate exactly one role per Codex thread.",
+  "description": "A small-team Codex collaboration layer for lead/member agent workflows, module-scoped work, task state, announcements, logs, and fail-closed role checks.",
   "author": {
     "name": "Remote Agent Collaboration Maintainers"
   },
@@ -21,8 +21,8 @@
   },
   "interface": {
     "displayName": "Remote Agent Collaboration",
-    "shortDescription": "Two explicit collaboration roles with fail-closed local protocol checks",
-    "longDescription": "Remote Agent Collaboration installs lead and member skills for Codex. Hooks can provide session context when trusted and observed; collabctl remains the deterministic local enforcement layer and fails closed without a real session_id.",
+    "shortDescription": "Coordinate a small human plus AI project team with lead and member Codex roles",
+    "longDescription": "Remote Agent Collaboration installs lead and member skills for Codex so small teams can manage multi-agent work in one repository. The lead role coordinates members, modules, announcements, reviews, and log compaction. Member roles work assigned tasks and append module-scoped logs. Hooks can provide session context when trusted and observed; collabctl remains the deterministic local enforcement layer and fails closed without a real session_id.",
     "developerName": "Remote Agent Collaboration Maintainers",
     "category": "Developer Tools",
     "capabilities": [

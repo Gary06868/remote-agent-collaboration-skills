@@ -14,6 +14,9 @@ SCHEMA_VERSION = "0.1"
 
 
 def utc_now() -> str:
+    fixed = os.environ.get("RAC_FIXED_TIME_UTC")
+    if fixed:
+        return fixed
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 

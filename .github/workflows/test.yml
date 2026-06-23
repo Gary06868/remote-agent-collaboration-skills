@@ -19,4 +19,5 @@ jobs:
       - run: python -m pytest
       - run: python scripts/generate_demo.py
       - run: python scripts/verify_readme_assets.py
+      - run: git diff --exit-code -- docs/assets/demo.gif docs/assets/demo-poster.png docs/assets/demo-poster.svg demo/demo-transcript.txt
       - run: collabctl privacy-scan --json
