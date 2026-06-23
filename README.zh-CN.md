@@ -7,8 +7,8 @@
 <p>
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-0f766e">
   <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-2563eb">
-  <img alt="Tests passing" src="https://img.shields.io/badge/tests-7%20passing-16a34a">
-  <img alt="Phase 0 failed core gate" src="https://img.shields.io/badge/Phase%200-FAILED%20CORE%20GATE-dc2626">
+  <img alt="Tests passing" src="https://img.shields.io/badge/tests-passing-16a34a">
+  <img alt="Phase 0 hook gated" src="https://img.shields.io/badge/Phase%200-hook%20gated-f59e0b">
 </p>
 
 ![演示](docs/assets/demo.gif)
@@ -24,7 +24,7 @@
 - lead 负责分配任务、审核、公告和日志压缩，member 只处理授权模块
 - 把 vibe coding 从聊天驱动变成可追踪、可审计、可交接的协作流程
 
-> 当前本机验证状态：**FAILED CORE GATE**。在这个开发环境中，真实 Codex thread 没有观测到 hooks 运行。因此 `collabctl` 会在缺少真实 `session_id` 时 fail closed，`doctor` 不会报告 healthy。
+> Phase 0 由 hook 真实观测作为门禁。只有在 `/hooks` 中信任插件 hooks、新建 Codex thread、hook 读取到真实 `session_id` 并写入 `.collaboration-local/session-locks/<session_id>.json` 后，`collabctl doctor --json` 才会报告 `role_lock_enforced: true`。本地 `--session-id` 或 `COLLAB_SESSION_ID` 只是测试/调试 fallback，doctor 会保持 `role_lock_enforced: false`。
 
 快速入口：[Agent 安装](#给-ai-agent安装两个-skill每个线程只激活一个角色) · [快速开始](#快速开始) · [角色模型](#角色模型) · [示例项目](examples/vibe-coding-team/README.md) · [English README](README.md)
 
@@ -79,6 +79,8 @@
 
 9. 报告安装路径、Plugin 状态、hook 状态和 `role_lock_enforced`。
 
+如果 hooks 未被信任，或信任后没有新建 thread，doctor 必须保持 unhealthy 且 `role_lock_enforced: false`。修复步骤是打开 `/hooks` 信任 hooks，新建 thread，激活一个角色，再运行 doctor。
+
 可复制给 Agent 的安装指令：
 
 ```text
@@ -96,6 +98,23 @@ collabctl actor bootstrap --actor-id lead --role lead --yes
 collabctl session activate --session-id thread-lead --role lead --skill team-lead-collaboration --actor-id lead
 collabctl doctor --json
 ```
+
+上面的命令使用 CLI fallback，session lock 会带 `fallback: true`。在真实 Codex hooks 被信任并运行前，doctor 应显示 `fallback_mode: true` 且 `role_lock_enforced: false`。
+
+也可以用环境变量做本地调试：
+
+```bash
+COLLAB_SESSION_ID=thread-lead collabctl session status
+```
+
+Windows PowerShell：
+
+```powershell
+$env:COLLAB_SESSION_ID = "thread-lead"
+collabctl session status
+```
+
+fallback ID 不能证明线程级互斥。真实路径是：`UserPromptSubmit` 记录角色选择，`PreToolUse` 在运行 `collabctl` 前刷新真实 session 上下文，`SubagentStart` 把父线程 session 注入子线程上下文。
 
 ## 角色模型
 

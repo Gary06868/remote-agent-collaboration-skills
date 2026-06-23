@@ -14,8 +14,9 @@ from . import __version__
 from .errors import CollabError, ROLE_NOT_AUTHORIZED, STATE_TRANSITION_DENIED
 from .sessions import activate as activate_session
 from .sessions import close as close_session
+from .sessions import list_observed_session_locks
 from .sessions import require as require_session
-from .sessions import session_id_from
+from .sessions import session_context_from
 from .storage import (
     SCHEMA_VERSION,
     append_jsonl,
@@ -116,28 +117,38 @@ def actor_bootstrap(args: argparse.Namespace) -> dict:
 
 def session_activate(args: argparse.Namespace) -> dict:
     root = find_project_root()
-    sid = session_id_from(args.session_id, os.environ)
-    lock = activate_session(root, session_id=sid, role=args.role, skill_name=args.skill, actor_id=args.actor_id, source=args.source)
+    context = session_context_from(args.session_id, os.environ)
+    sid = context["session_id"]
+    lock = activate_session(
+        root,
+        session_id=sid,
+        role=args.role,
+        skill_name=args.skill,
+        actor_id=args.actor_id,
+        source=args.source,
+        fallback=context["fallback"],
+        session_id_source=context["source"],
+    )
     return {"ok": True, "message": f"Session active as {args.role}.", "lock": lock}
 
 
 def session_status(args: argparse.Namespace) -> dict:
     root = find_project_root()
-    sid = session_id_from(args.session_id, os.environ)
+    sid = session_context_from(args.session_id, os.environ)["session_id"]
     lock = require_session(root, session_id=sid)
     return {"ok": True, "message": f"Session role: {lock['role']}", "lock": lock}
 
 
 def session_close_cmd(args: argparse.Namespace) -> dict:
     root = find_project_root()
-    sid = session_id_from(args.session_id, os.environ)
+    sid = session_context_from(args.session_id, os.environ)["session_id"]
     lock = close_session(root, session_id=sid)
     return {"ok": True, "message": "Session closed.", "lock": lock}
 
 
 def command_lock(args: argparse.Namespace, roles: set[str]) -> tuple[Path, dict]:
     root = find_project_root()
-    sid = session_id_from(args.session_id, os.environ)
+    sid = session_context_from(args.session_id, os.environ)["session_id"]
     return root, require_session(root, session_id=sid, allowed_roles=roles)
 
 
@@ -435,26 +446,81 @@ def git_preflight(args: argparse.Namespace) -> dict:
     return {"ok": True, "message": "Git preflight completed.", "checks": checks}
 
 
+def session_file_locks(root: Path) -> list[dict]:
+    directory = local_dir(root) / "sessions"
+    if not directory.exists():
+        return []
+    locks = []
+    for path in sorted(directory.glob("*.json")):
+        data = read_json(path, {})
+        if isinstance(data, dict) and data:
+            locks.append(data)
+    return locks
+
+
+def observed_event_names(root: Path, observed_locks: list[dict]) -> set[str]:
+    names: set[str] = set()
+    for lock in observed_locks:
+        for event in lock.get("observed_events", []):
+            names.add(str(event))
+        if lock.get("source_event"):
+            names.add(str(lock["source_event"]))
+    for event in jsonl_events(local_dir(root) / "hook-events.jsonl"):
+        name = event.get("event")
+        if name:
+            names.add(str(name))
+    return names
+
+
+def valid_observed_role_lock(lock: dict) -> bool:
+    return (
+        bool(lock.get("session_id"))
+        and lock.get("role") in {"lead", "member"}
+        and bool(lock.get("actor_id"))
+        and bool(lock.get("skill_name"))
+        and not bool(lock.get("fallback"))
+    )
+
+
 def doctor(args: argparse.Namespace) -> dict:
     root = find_project_root(require=False)
     phase0 = read_json(local_dir(root) / "phase0_result.json", {})
     hooks_installed = (root / "hooks" / "hooks.json").exists() or (root / ".codex" / "hooks.json").exists()
-    role_lock = bool(phase0.get("role_lock_enforced"))
+    observed_locks = list_observed_session_locks(root)
+    valid_observed_locks = [lock for lock in observed_locks if valid_observed_role_lock(lock)]
+    file_locks = session_file_locks(root)
+    fallback_mode = any(lock.get("fallback") for lock in [*observed_locks, *file_locks]) and not valid_observed_locks
+    events = observed_event_names(root, observed_locks)
+    role_lock = bool(phase0.get("role_lock_enforced")) or bool(valid_observed_locks)
     blocking = []
+    if fallback_mode:
+        blocking.append("FALLBACK_SESSION_ONLY")
     if not role_lock:
         blocking.append("FAILED_CORE_GATE: real Codex thread hooks were not observed running in this environment.")
+    enforcement_mode = phase0.get("enforcement_mode")
+    if valid_observed_locks:
+        enforcement_mode = "hook_observed_session_lock"
+    else:
+        enforcement_mode = enforcement_mode or "failed_core_gate"
     result = {
         "ok": role_lock,
         "healthy": role_lock,
         "version": __version__,
         "hooks_installed": hooks_installed,
-        "hooks_trusted_or_observed_running": bool(phase0.get("hooks_trusted_or_observed_running")),
-        "session_id_available": bool(phase0.get("session_id_available")),
-        "user_prompt_hook_operational": bool(phase0.get("user_prompt_hook_operational")),
-        "pre_tool_hook_operational": bool(phase0.get("pre_tool_hook_operational")),
-        "subagent_hook_operational": bool(phase0.get("subagent_hook_operational")),
+        "hooks_trusted_or_observed_running": bool(phase0.get("hooks_trusted_or_observed_running")) or bool(events) or bool(valid_observed_locks),
+        "session_id_available": bool(phase0.get("session_id_available")) or bool(valid_observed_locks),
+        "user_prompt_hook_operational": bool(phase0.get("user_prompt_hook_operational")) or "UserPromptSubmit" in events,
+        "pre_tool_hook_operational": bool(phase0.get("pre_tool_hook_operational")) or "PreToolUse" in events,
+        "subagent_hook_operational": bool(phase0.get("subagent_hook_operational")) or "SubagentStart" in events,
         "role_lock_enforced": role_lock,
-        "enforcement_mode": phase0.get("enforcement_mode", "failed_core_gate"),
+        "enforcement_mode": enforcement_mode,
+        "fallback_mode": fallback_mode,
+        "fallback_warning": (
+            "No trusted Codex hook session was observed. --session-id and COLLAB_SESSION_ID locks are local test fallbacks only."
+            if fallback_mode
+            else None
+        ),
+        "observed_session_lock_count": len(valid_observed_locks),
         "blocking_reasons": blocking,
         "message": "Doctor completed." if role_lock else "Doctor failed: role lock is not enforced.",
     }

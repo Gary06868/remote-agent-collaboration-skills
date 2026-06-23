@@ -26,3 +26,20 @@ After installation:
 4. Invoke exactly one role with `$team-lead-collaboration` or `$team-member-collaboration`.
 5. Run `collabctl doctor --json`.
 6. Report `role_lock_enforced`, `enforcement_mode`, and `blocking_reasons`.
+
+Phase 0 passes only when trusted hooks observe a real Codex `session_id` and write `.collaboration-local/session-locks/<session_id>.json`. If hooks are not trusted, or if the thread was not restarted after trust, `doctor` must report `role_lock_enforced: false` and must not report healthy.
+
+Local debugging fallback:
+
+```bash
+collabctl session activate --session-id local-thread --role lead --skill team-lead-collaboration --actor-id lead
+collabctl doctor --json
+```
+
+or:
+
+```bash
+COLLAB_SESSION_ID=local-thread collabctl session status
+```
+
+Fallback locks are marked `fallback: true`; they are useful for tests and CLI development but do not prove real Codex thread mutual exclusion.

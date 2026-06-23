@@ -1,8 +1,8 @@
 # Phase 0 Hook Feasibility
 
-Status: `FAILED CORE GATE`
+Status: `HOOK_GATE_IMPLEMENTED`
 
-Observed in this development environment:
+Earlier observation in this development environment:
 
 - A real `codex exec` thread was created and returned a thread id.
 - The thread executed a shell command, proving tool execution occurred.
@@ -10,12 +10,20 @@ Observed in this development environment:
 - User-level fallback hooks did not produce observations.
 - `codex exec --dangerously-bypass-hook-trust` is rejected by this local CLI build.
 
-Result:
+Current implementation result:
+
+- `UserPromptSubmit` binds the real hook-provided `session_id` to exactly one role.
+- `PreToolUse` records the observed session lock in `.collaboration-local/session-locks/<session_id>.json` and injects `--session-id` into controlled `collabctl` commands.
+- `SubagentStart` inherits the parent session context and records the inherited role.
+- `collabctl doctor --json` reports `role_lock_enforced=true` when a non-fallback hook-observed session lock exists.
+- Local `--session-id` and `COLLAB_SESSION_ID` remain fallback-only and keep `role_lock_enforced=false`.
+
+Untrusted-hook result:
 
 - `role_lock_enforced=false`
 - `enforcement_mode=failed_core_gate`
 - Role-controlled `collabctl` writes fail closed when `session_id` is missing.
-- This release must not be described as fully enforcing thread-level mutual exclusion until hooks are trusted and observed running in real Codex threads.
+- This release must not be described as enforcing thread-level mutual exclusion until hooks are trusted in `/hooks`, a new Codex thread is started, and hook observations are present.
 
 Subagent notes:
 

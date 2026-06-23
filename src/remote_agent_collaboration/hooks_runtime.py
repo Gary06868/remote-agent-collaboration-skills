@@ -7,8 +7,8 @@ import sys
 from pathlib import Path
 
 from .errors import MULTIPLE_ROLES_SELECTED, ROLE_SESSION_CONFLICT, CollabError
-from .sessions import activate, require, session_id_from
-from .storage import find_project_root, local_dir, read_json, atomic_write_json, utc_now
+from .sessions import activate, read_observed_session_lock, require, write_observed_session_lock
+from .storage import find_project_root, local_dir, utc_now
 
 LEAD_TOKEN = "$team-lead-collaboration"
 MEMBER_TOKEN = "$team-member-collaboration"
@@ -31,8 +31,34 @@ def _session_id(data: dict) -> str | None:
     return os.environ.get("CODEX_SESSION_ID") or os.environ.get("CODEX_THREAD_ID")
 
 
+def _parent_session_id(data: dict) -> str | None:
+    for key in ("parent_session_id", "parentSessionId", "parent_thread_id", "parentThreadId"):
+        if data.get(key):
+            return str(data[key])
+    return _session_id(data)
+
+
 def _prompt(data: dict) -> str:
     return str(data.get("prompt") or data.get("user_prompt") or data.get("message") or "")
+
+
+def _prompt_role(prompt: str) -> tuple[str | None, str | None]:
+    has_lead = LEAD_TOKEN in prompt
+    has_member = MEMBER_TOKEN in prompt
+    if has_lead and has_member:
+        raise CollabError(MULTIPLE_ROLES_SELECTED, "Choose exactly one collaboration role per prompt.")
+    if has_lead:
+        return "lead", "team-lead-collaboration"
+    if has_member:
+        return "member", "team-member-collaboration"
+    return None, None
+
+
+def _default_actor_id(data: dict, role: str) -> str:
+    value = data.get("actor_id") or os.environ.get("RAC_ACTOR_ID")
+    if value:
+        return str(value)
+    return "lead" if role == "lead" else "member"
 
 
 def _tool_input(data: dict) -> dict:
@@ -82,6 +108,16 @@ def _record(root: Path, event: str, data: dict, result: dict) -> None:
         handle.write(json.dumps({"at": utc_now(), "event": event, "data_keys": sorted(data), "result": result}, sort_keys=True) + "\n")
 
 
+def _lock_for_session(root: Path, session_id: str) -> dict:
+    try:
+        return require(root, session_id=session_id)
+    except CollabError:
+        observed = read_observed_session_lock(root, session_id)
+        if observed:
+            return observed
+        raise
+
+
 def user_prompt_submit() -> int:
     data = _payload()
     root = find_project_root(require=False)
@@ -89,16 +125,31 @@ def user_prompt_submit() -> int:
     sid = _session_id(data)
     result: dict = {"continue": True}
     try:
-        has_lead = LEAD_TOKEN in prompt
-        has_member = MEMBER_TOKEN in prompt
-        if has_lead and has_member:
-            raise CollabError(MULTIPLE_ROLES_SELECTED, "Choose exactly one collaboration role per prompt.")
-        if sid and (has_lead or has_member) and (root / ".collaboration").exists():
-            role = "lead" if has_lead else "member"
-            skill = "team-lead-collaboration" if has_lead else "team-member-collaboration"
-            actor_id = data.get("actor_id") or os.environ.get("RAC_ACTOR_ID") or "default-lead"
-            activate(root, session_id=sid, role=role, skill_name=skill, actor_id=str(actor_id), source="UserPromptSubmit")
-        result = {"continue": True, "session_id_available": bool(sid)}
+        role, skill = _prompt_role(prompt)
+        if sid and role and skill and (root / ".collaboration").exists():
+            actor_id = _default_actor_id(data, role)
+            lock = activate(
+                root,
+                session_id=sid,
+                role=role,
+                skill_name=skill,
+                actor_id=actor_id,
+                source="UserPromptSubmit",
+                fallback=False,
+                session_id_source="hook:UserPromptSubmit",
+            )
+            write_observed_session_lock(
+                root,
+                session_id=sid,
+                role=role,
+                actor_id=actor_id,
+                skill_name=skill,
+                source_event="UserPromptSubmit",
+                fallback=False,
+            )
+            result = {"continue": True, "session_id_available": True, "role": lock.get("role"), "actor_id": lock.get("actor_id")}
+        else:
+            result = {"continue": True, "session_id_available": bool(sid)}
     except CollabError as exc:
         result = {"continue": False, "error": exc.code, "message": exc.message}
     _record(root, "UserPromptSubmit", data, result)
@@ -114,6 +165,21 @@ def pre_tool_use() -> int:
     if sid:
         rewritten, mode = _rewrite_tool_input_for_session(data, sid)
         result = {"continue": True, "session_id_available": True, "session_context_mode": mode}
+        if mode in {"command_rewrite", "already_has_context_or_unsupported"} and (root / ".collaboration").exists():
+            try:
+                lock = _lock_for_session(root, sid)
+                write_observed_session_lock(
+                    root,
+                    session_id=sid,
+                    role=str(lock.get("role")),
+                    actor_id=str(lock.get("actor_id")),
+                    skill_name=str(lock.get("skill_name")),
+                    source_event="PreToolUse",
+                    fallback=False,
+                )
+                result.update({"session_lock_observed": True, "role": lock.get("role"), "actor_id": lock.get("actor_id")})
+            except CollabError as exc:
+                result.update({"session_lock_observed": False, "warning": exc.code, "message": exc.message})
         if rewritten is not None:
             result["tool_input"] = rewritten
             result["modified_tool_input"] = rewritten
@@ -127,12 +193,33 @@ def pre_tool_use() -> int:
 def subagent_start() -> int:
     data = _payload()
     root = find_project_root(require=False)
-    sid = _session_id(data)
+    sid = _parent_session_id(data)
     result = {"continue": True, "session_id_available": bool(sid), "inherited": False}
     if sid and (root / ".collaboration").exists():
         try:
-            lock = require(root, session_id=sid)
-            result.update({"inherited": True, "role": lock.get("role")})
+            lock = _lock_for_session(root, sid)
+            requested_role, _requested_skill = _prompt_role(_prompt(data))
+            if requested_role and requested_role != lock.get("role"):
+                result.update({"warning": ROLE_SESSION_CONFLICT, "message": f"Subagent inherits {lock.get('role')} and cannot select {requested_role}."})
+            write_observed_session_lock(
+                root,
+                session_id=sid,
+                role=str(lock.get("role")),
+                actor_id=str(lock.get("actor_id")),
+                skill_name=str(lock.get("skill_name")),
+                source_event="SubagentStart",
+                fallback=False,
+                parent_session_id=sid,
+                subagent=True,
+            )
+            result.update(
+                {
+                    "inherited": True,
+                    "role": lock.get("role"),
+                    "actor_id": lock.get("actor_id"),
+                    "session_context": {"COLLAB_SESSION_ID": sid, "RAC_SESSION_ID": sid},
+                }
+            )
         except CollabError as exc:
             result.update({"warning": exc.code, "message": exc.message})
     _record(root, "SubagentStart", data, result)

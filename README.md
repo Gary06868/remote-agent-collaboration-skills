@@ -11,8 +11,8 @@ Install both Skills. Activate exactly one per Codex thread.
 <p>
   <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-0f766e">
   <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-2563eb">
-  <img alt="Tests passing" src="https://img.shields.io/badge/tests-7%20passing-16a34a">
-  <img alt="Phase 0 failed core gate" src="https://img.shields.io/badge/Phase%200-FAILED%20CORE%20GATE-dc2626">
+  <img alt="Tests passing" src="https://img.shields.io/badge/tests-passing-16a34a">
+  <img alt="Phase 0 hook gated" src="https://img.shields.io/badge/Phase%200-hook%20gated-f59e0b">
 </p>
 
 ![demo](docs/assets/demo.gif)
@@ -28,7 +28,7 @@ Use it when you are:
 - assigning module-scoped work to AI agents without losing review, status, or log history
 - turning "vibe coding" into a repeatable collaboration workflow before the project gets messy
 
-> Current local validation status: **FAILED CORE GATE** in this development environment. `collabctl` fails closed for role-controlled writes without a real `session_id`, and `doctor` will not report healthy until hooks are trusted and observed running in real Codex threads.
+> Phase 0 is hook-gated. `collabctl doctor --json` reports `role_lock_enforced: true` only after the plugin hooks are trusted in `/hooks`, a new Codex thread observes a real `session_id`, and the hooks write `.collaboration-local/session-locks/<session_id>.json`. Local `--session-id` or `COLLAB_SESSION_ID` fallback is for tests and debugging only; doctor keeps `role_lock_enforced: false` in fallback mode.
 
 Quick links: [Agent install](#for-ai-agents-install-both-skills-activate-one-role) · [Quick start](#quick-start) · [Role model](#role-model) · [Example project](examples/vibe-coding-team/README.md) · [中文说明](README.zh-CN.md)
 
@@ -83,6 +83,8 @@ Use this section without reading the full README.
 
 9. Report installed paths, plugin status, hook status, and `role_lock_enforced`.
 
+If hooks are not trusted or the thread was not restarted after trusting them, doctor must stay unhealthy with `role_lock_enforced: false`. Fix that by trusting the hooks in `/hooks`, starting a fresh thread, activating one role, and running doctor again.
+
 Copyable agent instruction:
 
 ```text
@@ -101,7 +103,22 @@ collabctl session activate --session-id thread-lead --role lead --skill team-lea
 collabctl doctor --json
 ```
 
-`doctor` reports unhealthy until real Codex hooks are trusted and observed.
+The command above uses CLI fallback and should show `fallback: true` on the session lock. `doctor` should report `fallback_mode: true` and `role_lock_enforced: false` until real Codex hooks are trusted and observed.
+
+Local environment fallback is also supported for debugging:
+
+```bash
+COLLAB_SESSION_ID=thread-lead collabctl session status
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:COLLAB_SESSION_ID = "thread-lead"
+collabctl session status
+```
+
+Fallback IDs never prove thread-level mutual exclusion. A trusted `UserPromptSubmit` hook records the selected role, `PreToolUse` refreshes the real session context before `collabctl` runs, and `SubagentStart` injects the parent session into subagent context.
 
 ## Role Model
 

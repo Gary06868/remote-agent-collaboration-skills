@@ -118,3 +118,106 @@ def test_doctor_failed_core_gate(tmp_path, monkeypatch):
     assert code == 2
     assert payload["role_lock_enforced"] is False
     assert payload["enforcement_mode"] == "failed_core_gate"
+
+
+def test_phase0_smoke_fallback_session_id_does_not_enforce_role_lock(tmp_path, monkeypatch):
+    code, payload = run(["init", "--project-id", "phase0", "--yes"], tmp_path, monkeypatch)
+    assert code == 0, payload
+    code, payload = run(["actor", "bootstrap", "--actor-id", "lead", "--role", "lead", "--yes"], tmp_path, monkeypatch)
+    assert code == 0, payload
+
+    code, payload = run(
+        [
+            "session",
+            "activate",
+            "--session-id",
+            "test-thread",
+            "--role",
+            "lead",
+            "--skill",
+            "team-lead-collaboration",
+            "--actor-id",
+            "lead",
+        ],
+        tmp_path,
+        monkeypatch,
+    )
+    assert code == 0, payload
+    assert payload["lock"]["session_id"] == "test-thread"
+    assert payload["lock"]["fallback"] is True
+
+    code, payload = run(["doctor"], tmp_path, monkeypatch)
+    assert code == 2
+    assert payload["role_lock_enforced"] is False
+    assert payload["fallback_mode"] is True
+    assert "FALLBACK_SESSION_ONLY" in payload["blocking_reasons"]
+
+
+def test_phase0_smoke_observed_hook_session_lock_enforces_role_lock(tmp_path, monkeypatch):
+    code, payload = run(["init", "--project-id", "phase0", "--yes"], tmp_path, monkeypatch)
+    assert code == 0, payload
+    code, payload = run(["actor", "bootstrap", "--actor-id", "lead", "--role", "lead", "--yes"], tmp_path, monkeypatch)
+    assert code == 0, payload
+    code, payload = run(
+        [
+            "session",
+            "activate",
+            "--session-id",
+            "test-thread",
+            "--role",
+            "lead",
+            "--skill",
+            "team-lead-collaboration",
+            "--actor-id",
+            "lead",
+        ],
+        tmp_path,
+        monkeypatch,
+    )
+    assert code == 0, payload
+
+    lock_dir = tmp_path / ".collaboration-local" / "session-locks"
+    lock_dir.mkdir(parents=True)
+    (lock_dir / "test-thread.json").write_text(
+        json.dumps(
+            {
+                "session_id": "test-thread",
+                "role": "lead",
+                "actor_id": "lead",
+                "skill_name": "team-lead-collaboration",
+                "fallback": False,
+                "source_event": "PreToolUse",
+                "observed_events": ["UserPromptSubmit", "PreToolUse"],
+                "last_seen_at_utc": "2026-06-23T00:00:00Z",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    code, payload = run(["doctor"], tmp_path, monkeypatch)
+    assert code == 0
+    assert payload["role_lock_enforced"] is True
+    assert payload["enforcement_mode"] == "hook_observed_session_lock"
+    assert payload["hooks_trusted_or_observed_running"] is True
+    assert payload["session_id_available"] is True
+    assert payload["user_prompt_hook_operational"] is True
+    assert payload["pre_tool_hook_operational"] is True
+
+
+def test_session_activate_can_use_collab_session_id_env_as_fallback(tmp_path, monkeypatch):
+    code, payload = run(["init", "--project-id", "phase0", "--yes"], tmp_path, monkeypatch)
+    assert code == 0, payload
+    code, payload = run(["actor", "bootstrap", "--actor-id", "lead", "--role", "lead", "--yes"], tmp_path, monkeypatch)
+    assert code == 0, payload
+    monkeypatch.setenv("COLLAB_SESSION_ID", "env-thread")
+
+    code, payload = run(
+        ["session", "activate", "--role", "lead", "--skill", "team-lead-collaboration", "--actor-id", "lead"],
+        tmp_path,
+        monkeypatch,
+    )
+
+    assert code == 0, payload
+    assert payload["lock"]["session_id"] == "env-thread"
+    assert payload["lock"]["fallback"] is True
+    assert payload["lock"]["session_id_source"] == "COLLAB_SESSION_ID"
