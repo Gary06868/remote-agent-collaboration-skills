@@ -1,4 +1,4 @@
----
+﻿---
 name: team-member-collaboration
 description: "Markdown collaboration Member. Use only when the user explicitly selects $team-member-collaboration for assigned project work."
 ---
@@ -113,11 +113,32 @@ git branch -vv
 
 Run `git fetch --all --prune` only when a remote exists. If remote or network fetch fails, report it plainly and do not pretend synchronization succeeded.
 
+## Collaboration Modes
+
+Confirm which mode applies before locking:
+
+- Shared Workspace Mode: multiple agents use the same working directory.
+- Remote Git Mode: different machines, clones, or worktrees coordinate through a Git remote.
+
+Do not mix assumptions between these modes. Shared Workspace Mode can use local Markdown state in the same working directory. Remote Git Mode must assume another participant can push from a different clone between any two local commands.
+
+Remote Git Mode uses low-conflict Markdown state:
+
+| Path | Type | Rule |
+| --- | --- | --- |
+| `.collab/locks/<actor-id>.md` | authoritative state | One actor owns one lock file. |
+| `.collab/tasks/<task-id>.md` | authoritative state | One task owns one task file. |
+| `.collab/events/<timestamp>-<actor-id>.md` | append-only event | One event per file. |
+| `.collab/snapshots/COLLAB_LOG.md` | derived snapshot | Lead may rebuild it from locks, tasks, and events. |
+| `COLLAB_LOG.md` | derived snapshot | Lead may rebuild it as a human-readable aggregate. |
+
 ## Soft Lock Check
 
 Soft locks are collaboration notes, not security locks.
 
 Quick reads of `AGENTS.md`, `COLLAB_LOG.md`, and task files do not need a lock. Larger research or analysis may use a `reading` lock.
+
+Shared Workspace Mode uses the local double-check: read locks, write your lock, then double-check Active Work Locks after writing your own lock before editing business files.
 
 Conflict semantics:
 
@@ -166,6 +187,33 @@ Use this lock shape:
 
 If a lock looks stale, do not delete it yourself. Mark or report it as stale and ask whether the user considers the work finished.
 
+## Remote Git Mode Lock Protocol
+
+Before modifying business files in Remote Git Mode:
+
+1. fetch the latest remote state.
+2. Re-read `.collab/locks/*.md` and `.collab/tasks/*.md`.
+3. Check existing locks for scope overlap.
+4. create a candidate lock record in `.collab/locks/<actor-id>.md`.
+5. commit only the candidate lock.
+6. push the candidate lock to the collaboration branch.
+7. If push reports non-fast-forward, fetch, rebase or reapply the candidate lock, re-read all locks, and re-evaluate scope overlap.
+8. Do not blindly repeat push.
+9. Do not force push.
+10. Only edit business files after the candidate lock is published and rechecked on the latest remote state.
+
+If you lose a same-scope race, withdraw your candidate lock and stop before business edits.
+
+Lock lifecycle:
+
+- acquire: publish a candidate lock, re-check latest remote state, then continue.
+- refresh: update `Last Updated` before continuing long work.
+- pause: keep the scope reserved while temporarily stopped.
+- resume: the same actor returns and refreshes the lock before editing.
+- release: remove or mark your lock released after work and reconciliation.
+- stale: older than the stale threshold; report but do not delete another actor's stale lock.
+- abandoned: Lead or explicit user decision marks a stale/crashed lock abandoned so others can proceed.
+
 ## What You May Do
 
 - Work from the user's current instruction.
@@ -173,7 +221,7 @@ If a lock looks stale, do not delete it yourself. Mark or report it as stale and
 - Modify files related to your assigned or requested scope.
 - Write a short update in `COLLAB_LOG.md`.
 - Update your own task status if Task Assignment Mode is enabled and `TEAM_TASKS.md` exists.
-- Record blockers and ask the Lead or user for a decision.
+- Record blockers and ask the review target for a decision.
 - Remove your own lock after completing or pausing work.
 - In task mode, mark your work as `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
 - In Casual Coordination Mode, write a completion summary without forcing review.
@@ -274,11 +322,19 @@ After major operations, verify:
 When you complete assigned work and mark it `READY_FOR_REVIEW`:
 
 - Remove your writing lock from Active Work Locks.
-- Set Current Snapshot Next action to `Lead or user reviews <task id>.`
-- Keep only the Member to Lead/User review handoff in Open Handoffs.
+- Set Current Snapshot Next action to name the specific review target.
+- Keep only the Member to target review handoff in Open Handoffs.
 - Move any Lead to Member handoff for the completed task to History / Archived Notes.
 - Record the completion in Latest Updates.
 - Ensure `TEAM_TASKS.md` status is `READY_FOR_REVIEW`.
+
+Completion Policy rules:
+
+- Lead review: finish as `READY_FOR_REVIEW`; handoff target type is `actor`; target actor is the concrete Lead `actor_id`.
+- User review: finish as `READY_FOR_REVIEW`; handoff target type is `human-user`; do not invent an Actor ID for the user.
+- Member self-completion: mark the task `DONE` when acceptance notes are met; do not create a review handoff.
+- Per-task decision: each task must record the selected completion policy. If it is missing, stop and ask.
+- Review loops are explicit: `CHANGES_REQUESTED -> IN_PROGRESS -> READY_FOR_REVIEW` for review policies, or `CHANGES_REQUESTED -> IN_PROGRESS -> DONE` for Member self-completion.
 
 ## When To Ask
 

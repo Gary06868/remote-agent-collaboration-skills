@@ -1,4 +1,4 @@
-# Collaboration Log
+﻿# Collaboration Log
 
 > Read `AGENTS.md` before working.
 > Project timezone: America/Los_Angeles
@@ -16,7 +16,7 @@ Current locks:
 - Stage: Review.
 - Current focus: Review the completed landing-page intro.
 - Active work: TASK-001 is ready for review; no active write lock remains.
-- Next action: Lead or user reviews TASK-001.
+- Next action: alex-codex-lead-coordinator-01 reviews TASK-001.
 - Last updated: 2026-06-24T10:32:00-07:00
 - Updated by: morgan-claude-member-content-01
 
@@ -28,7 +28,9 @@ Current locks:
 
 - Handoff ID: H-002
   From Actor: morgan-claude-member-content-01
-  To Actor: alex-codex-lead-coordinator-01 or user
+  Target Type: actor
+  Target Actor ID: alex-codex-lead-coordinator-01
+  Target Human:
   Task: TASK-001
   Scope: README.md
   Required Next Action: Review the landing-page intro and mark TASK-001 DONE or CHANGES_REQUESTED.
@@ -57,7 +59,7 @@ Current locks:
 - Checks: Final Reconciliation completed against AGENTS.md, COLLAB_LOG.md, and TEAM_TASKS.md.
 - Git: Not committed
 - Blockers: None
-- Next: Lead or user reviews TASK-001.
+- Next: alex-codex-lead-coordinator-01 reviews TASK-001.
 
 ### 2026-06-24T10:18:00-07:00 - alex-codex-member-test-02
 
@@ -72,7 +74,7 @@ Current locks:
 - Checks: Active Work Locks checked twice.
 - Git: Not committed
 - Blockers: Waiting for TASK-001 review before testing the same file.
-- Next: Wait for Lead or user decision.
+- Next: Wait for review target decision.
 
 ## History / Archived Notes
 

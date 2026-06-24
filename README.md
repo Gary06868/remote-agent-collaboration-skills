@@ -1,4 +1,4 @@
-# Remote Agent Collaboration Lite
+﻿# Remote Agent Collaboration Lite
 
 If you are vibe coding with friends, cofounders, contractors, or several AI agents, this is the lightweight coordination layer you want before the repo turns into scattered chats and duplicate edits.
 
@@ -29,7 +29,7 @@ flowchart LR
   D --> E["Member checks and adds lock"]
   E --> F["Member works"]
   F --> G["Member reconciles task/log/handoff"]
-  G --> H["Lead or user decides next step"]
+  G --> H["review target decides next step"]
 ```
 
 ## 60-Second Install
@@ -69,15 +69,21 @@ Windows PowerShell:
 ```powershell
 $skills = Join-Path $env:USERPROFILE ".codex\skills"
 New-Item -ItemType Directory -Force $skills | Out-Null
+Remove-Item -Recurse -Force (Join-Path $skills "team-lead-collaboration") -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force (Join-Path $skills "team-member-collaboration") -ErrorAction SilentlyContinue
 Copy-Item -Recurse -Force .\skills\team-lead-collaboration (Join-Path $skills "team-lead-collaboration")
 Copy-Item -Recurse -Force .\skills\team-member-collaboration (Join-Path $skills "team-member-collaboration")
 Get-ChildItem $skills | Where-Object Name -in @("team-lead-collaboration", "team-member-collaboration")
 ```
 
+These commands are safe to run repeatedly: they remove only the two target Skill directories before copying fresh files.
+
 macOS/Linux shell:
 
 ```bash
 mkdir -p "$HOME/.codex/skills"
+rm -rf "$HOME/.codex/skills/team-lead-collaboration"
+rm -rf "$HOME/.codex/skills/team-member-collaboration"
 cp -R skills/team-lead-collaboration "$HOME/.codex/skills/team-lead-collaboration"
 cp -R skills/team-member-collaboration "$HOME/.codex/skills/team-member-collaboration"
 find "$HOME/.codex/skills" -maxdepth 1 -type d \( -name team-lead-collaboration -o -name team-member-collaboration \)
@@ -91,6 +97,8 @@ Windows PowerShell:
 
 ```powershell
 New-Item -ItemType Directory -Force .\.codex\skills | Out-Null
+Remove-Item -Recurse -Force .\.codex\skills\team-lead-collaboration -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force .\.codex\skills\team-member-collaboration -ErrorAction SilentlyContinue
 Copy-Item -Recurse -Force .\skills\team-lead-collaboration .\.codex\skills\team-lead-collaboration
 Copy-Item -Recurse -Force .\skills\team-member-collaboration .\.codex\skills\team-member-collaboration
 Get-ChildItem .\.codex\skills
@@ -100,6 +108,8 @@ macOS/Linux shell:
 
 ```bash
 mkdir -p .codex/skills
+rm -rf .codex/skills/team-lead-collaboration
+rm -rf .codex/skills/team-member-collaboration
 cp -R skills/team-lead-collaboration .codex/skills/team-lead-collaboration
 cp -R skills/team-member-collaboration .codex/skills/team-member-collaboration
 find .codex/skills -maxdepth 1 -type d
@@ -149,6 +159,59 @@ Use it when:
 | `MODULE_OWNERSHIP.md` | Optional | Module owners and path boundaries when Module Ownership Mode is enabled. |
 
 Templates are available in [`templates/`](templates/). The Lead Skill also carries identical self-contained templates in [`skills/team-lead-collaboration/references/`](skills/team-lead-collaboration/references/).
+
+## Collaboration Modes
+
+Remote Agent Collaboration Lite has two explicit collaboration modes.
+
+### Shared Workspace Mode
+
+Shared Workspace Mode is for multiple agents using the same working directory. Agents coordinate through the root Markdown files, use local Active Work Locks, and double-check Active Work Locks after writing your own lock before editing business files.
+
+### Remote Git Mode
+
+Remote Git Mode is for different machines, clones, or worktrees coordinating through a Git remote. Git is only the synchronization transport. It is not a permission service, a lock server, or a runtime daemon.
+
+Do not mix assumptions between these modes. Shared Workspace Mode can rely on the same working directory and immediate local reads. Remote Git Mode must assume another participant can publish changes from a different clone between any two local commands.
+
+Remote Git Mode uses low-conflict Markdown state:
+
+| Path | Type | Rule |
+| --- | --- | --- |
+| `.collab/locks/<actor-id>.md` | authoritative state | One actor owns one lock file. It records current lock state for that actor. |
+| `.collab/tasks/<task-id>.md` | authoritative state | One task owns one task file. It records status, owner, scope, completion policy, and review target. |
+| `.collab/events/<timestamp>-<actor-id>.md` | append-only event | One event per file. Do not rewrite old event files except to correct private data before sharing. |
+| `.collab/snapshots/COLLAB_LOG.md` | derived snapshot | Lead may rebuild this from locks, tasks, and events. |
+| `COLLAB_LOG.md` | derived snapshot | In Remote Git Mode, this is a human-readable aggregate that Lead may rebuild. |
+
+Use `.collab/*` as the Remote Git Mode source of truth. Root files stay useful for humans, but the low-conflict files reduce repeated rewrites of `COLLAB_LOG.md` and `TEAM_TASKS.md`.
+
+## Remote Git Mode Lock Protocol
+
+Before modifying business files in Remote Git Mode:
+
+1. fetch the latest remote state.
+2. Re-read `.collab/locks/*.md` and `.collab/tasks/*.md`.
+3. Check existing locks for scope overlap.
+4. create a candidate lock record in `.collab/locks/<actor-id>.md`.
+5. commit only the candidate lock.
+6. push the candidate lock to the collaboration branch.
+7. If push reports non-fast-forward, fetch, rebase or reapply the candidate lock, re-read all locks, and re-evaluate scope overlap.
+8. Do not blindly repeat push.
+9. Do not force push.
+10. Only edit business files after the candidate lock is published and rechecked on the latest remote state.
+
+If two actors compete for the same scope, only one may continue. The losing actor must withdraw the candidate lock and stop before business edits.
+
+Lock lifecycle:
+
+- acquire: publish a candidate lock, re-check latest remote state, then treat it as acquired.
+- refresh: update `Last Updated` before continuing long work.
+- pause: keep the scope reserved while temporarily stopped.
+- resume: the same actor returns and refreshes the lock before editing.
+- release: remove or mark the actor's lock released after work and reconciliation.
+- stale: a lock is older than the stale threshold; ordinary Members report it but do not delete it.
+- abandoned: Lead or explicit user decision marks a stale/crashed lock abandoned so others can proceed.
 
 ## Actor Identity Protocol
 
@@ -266,11 +329,20 @@ Move `resolved` and `cancelled` handoffs to History / Archived Notes.
 When a Member completes `TASK-001` and marks it `READY_FOR_REVIEW`:
 
 - Active Work Locks no longer keeps that Member's writing lock.
-- Current Snapshot says `Next action: Lead or user reviews TASK-001.`
-- Open Handoffs keeps only the Member to Lead/User review handoff.
+- Current Snapshot names the specific review target for the task.
+- Open Handoffs keeps only the Member to target review handoff.
 - No old Lead to Member handoff asks that Member to retake the completed task.
 - Latest Updates records the completion.
 - `TEAM_TASKS.md` status is `READY_FOR_REVIEW`.
+
+Completion Policy rules:
+
+- Lead review: Member finishes as `READY_FOR_REVIEW`; handoff target type is `actor`; target actor is the concrete Lead `actor_id`.
+- User review: Member finishes as `READY_FOR_REVIEW`; handoff target type is `human-user`; do not invent an Actor ID for the user.
+- Member self-completion: Member marks the task `DONE` when acceptance notes are met; do not create a review handoff.
+- Per-task decision: each task must record the selected completion policy. If it is missing, stop and ask.
+
+Review loops are explicit: `CHANGES_REQUESTED -> IN_PROGRESS -> READY_FOR_REVIEW` for review policies, or `CHANGES_REQUESTED -> IN_PROGRESS -> DONE` for Member self-completion.
 
 ## Final Reconciliation
 
@@ -351,7 +423,7 @@ The example shows:
 
 ## Version
 
-Current Lite protocol version: `0.3.0`.
+Current Lite protocol version: `0.4.0`.
 
 ## Advanced Branches
 

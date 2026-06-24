@@ -1,7 +1,9 @@
-# Collaboration Log
+﻿# Collaboration Log
 
 > Read `AGENTS.md` before working.
 > Project timezone:
+
+Remote Git Mode note: `.collab/locks/<actor-id>.md` and `.collab/tasks/<task-id>.md` are authoritative state, `.collab/events/<timestamp>-<actor-id>.md` is an append-only event, and `.collab/snapshots/COLLAB_LOG.md` plus this root log are derived snapshot files. Lead may rebuild derived snapshots from authoritative state and events.
 
 ## Active Work Locks
 
@@ -44,10 +46,14 @@ Current locks:
 
 Only handoffs with `Status: open` or `Status: accepted` stay here. Move resolved or cancelled handoffs to History / Archived Notes.
 
+Handoff targets must distinguish actor targets from human-user targets. Do not write `review target` into an Actor ID field.
+
 ```markdown
 - Handoff ID:
   From Actor:
-  To Actor:
+  Target Type: actor | human-user
+  Target Actor ID:
+  Target Human:
   Task:
   Scope:
   Required Next Action:

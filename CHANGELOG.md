@@ -1,4 +1,14 @@
-# Changelog
+﻿# Changelog
+
+## 0.4.0
+
+- Added explicit Shared Workspace Mode and Remote Git Mode so agents do not mix same-directory assumptions with different-clone collaboration.
+- Added the Remote Git Mode lock protocol: candidate lock commit, push, non-fast-forward recovery, re-read/recheck, no force push, and lifecycle states for acquire, refresh, pause, resume, release, stale, and abandoned.
+- Added low-conflict Remote Git Mode Markdown state under `.collab/locks`, `.collab/tasks`, `.collab/events`, and `.collab/snapshots`.
+- Parameterized Completion Policy across Lead review, User review, Member self-completion, and Per-task decision.
+- Split handoff targets into actor targets and human-user targets; `review target` is no longer valid as an Actor ID.
+- Added real temporary bare-remote/two-clone tests for same-scope competition, different-scope parallel locks, and non-fast-forward recheck behavior.
+- Added repeated install idempotency tests and GitHub Actions for Ubuntu and Windows.
 
 ## 0.3.0
 

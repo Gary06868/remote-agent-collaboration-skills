@@ -61,7 +61,9 @@ LOCK_FIELDS = [
 HANDOFF_FIELDS = [
     "Handoff ID:",
     "From Actor:",
-    "To Actor:",
+    "Target Type: actor | human-user",
+    "Target Actor ID:",
+    "Target Human:",
     "Task:",
     "Scope:",
     "Required Next Action:",
@@ -563,7 +565,7 @@ class ExampleConsistencyTests(unittest.TestCase):
             [
                 "Stage: Review.",
                 "Active work: TASK-001 is ready for review; no active write lock remains.",
-                "Next action: Lead or user reviews TASK-001.",
+                "Next action: alex-codex-lead-coordinator-01 reviews TASK-001.",
                 "Updated by: morgan-claude-member-content-01",
             ],
         )
@@ -575,7 +577,7 @@ class ExampleConsistencyTests(unittest.TestCase):
                 "Status: READY_FOR_REVIEW",
                 "Owner ID: morgan-claude-member-content-01",
                 "Owner Display: Morgan's Claude #01 (Member - Content Developer)",
-                "Next Action: Lead or user reviews TASK-001.",
+                "Next Action: alex-codex-lead-coordinator-01 reviews TASK-001.",
             ],
         )
         assert_contains_all(
@@ -584,7 +586,8 @@ class ExampleConsistencyTests(unittest.TestCase):
             [
                 "Handoff ID: H-002",
                 "From Actor: morgan-claude-member-content-01",
-                "To Actor: alex-codex-lead-coordinator-01 or user",
+                "Target Type: actor",
+                "Target Actor ID: alex-codex-lead-coordinator-01",
                 "Task: TASK-001",
                 "Status: open",
             ],
@@ -740,7 +743,9 @@ class MarkdownLinkAndPrivacyTests(unittest.TestCase):
             self,
             read(CHANGELOG),
             [
-                "## 0.3.0",
+                "## 0.4.0",
+                "Remote Git Mode",
+                "Shared Workspace Mode",
                 "Actor Identity Protocol",
                 "Current Snapshot",
                 "Open Handoffs",

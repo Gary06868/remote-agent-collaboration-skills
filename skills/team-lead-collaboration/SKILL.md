@@ -1,4 +1,4 @@
----
+﻿---
 name: team-lead-collaboration
 description: "Markdown collaboration Lead. Use only when the user explicitly selects $team-lead-collaboration to organize lightweight project collaboration."
 ---
@@ -59,6 +59,27 @@ Use those templates when only the two Skill folders are installed. The repositor
 7. Read existing `README.md`, `AGENTS.md`, project config files, and docs when present.
 8. Respect existing project rules and architecture.
 9. Create or update only the collaboration files that are needed.
+
+## Collaboration Modes
+
+Choose and record one mode for the current work:
+
+- Shared Workspace Mode: multiple agents use the same working directory.
+- Remote Git Mode: different machines, clones, or worktrees coordinate through a Git remote.
+
+Do not mix assumptions between these modes. Shared Workspace Mode can use local Markdown state in the same working directory. Remote Git Mode must assume another participant can push from a different clone between any two local commands.
+
+Remote Git Mode uses low-conflict Markdown state:
+
+| Path | Type | Rule |
+| --- | --- | --- |
+| `.collab/locks/<actor-id>.md` | authoritative state | One actor owns one lock file. |
+| `.collab/tasks/<task-id>.md` | authoritative state | One task owns one task file. |
+| `.collab/events/<timestamp>-<actor-id>.md` | append-only event | One event per file. |
+| `.collab/snapshots/COLLAB_LOG.md` | derived snapshot | Lead may rebuild it from locks, tasks, and events. |
+| `COLLAB_LOG.md` | derived snapshot | Lead may rebuild it as a human-readable aggregate. |
+
+In Remote Git Mode, initialize `.collab/` when needed and treat root `COLLAB_LOG.md` and `TEAM_TASKS.md` as readable aggregates, not the only source of truth.
 
 ## Actor Identity Bootstrap
 
@@ -210,6 +231,8 @@ Soft locks are collaboration notes, not security locks.
 
 Quick reads of `AGENTS.md`, `COLLAB_LOG.md`, and task files do not need a lock. Larger research or analysis may use a `reading` lock.
 
+Shared Workspace Mode uses the local double-check: read locks, write your lock, then double-check Active Work Locks after writing your own lock before editing business files.
+
 Conflict semantics:
 
 - reading with reading does not conflict by default.
@@ -256,6 +279,33 @@ Use this lock shape:
 
 When work is complete, remove your lock and add a short entry under Latest Updates.
 
+## Remote Git Mode Lock Protocol
+
+Before modifying business files in Remote Git Mode:
+
+1. fetch the latest remote state.
+2. Re-read `.collab/locks/*.md` and `.collab/tasks/*.md`.
+3. Check existing locks for scope overlap.
+4. create a candidate lock record in `.collab/locks/<actor-id>.md`.
+5. commit only the candidate lock.
+6. push the candidate lock to the collaboration branch.
+7. If push reports non-fast-forward, fetch, rebase or reapply the candidate lock, re-read all locks, and re-evaluate scope overlap.
+8. Do not blindly repeat push.
+9. Do not force push.
+10. Only edit business files after the candidate lock is published and rechecked on the latest remote state.
+
+If two actors compete for the same scope, only one may continue. The losing actor must withdraw the candidate lock and stop before business edits.
+
+Lock lifecycle:
+
+- acquire: publish a candidate lock, re-check latest remote state, then continue.
+- refresh: update `Last Updated` before continuing long work.
+- pause: keep the scope reserved while temporarily stopped.
+- resume: the same actor returns and refreshes the lock before editing.
+- release: remove or mark the actor's lock released after work and reconciliation.
+- stale: older than the stale threshold; Members report but do not delete another actor's stale lock.
+- abandoned: Lead or explicit user decision marks a stale/crashed lock abandoned so others can proceed.
+
 ## AGENTS.md Must Include
 
 - Project Overview.
@@ -292,6 +342,8 @@ Open Handoffs only keeps unresolved handoffs:
 - `accepted`
 
 Move `resolved` and `cancelled` handoffs to History / Archived Notes.
+
+Handoff targets must distinguish actor targets from human-user targets. Do not write `review target` into an Actor ID field.
 
 ## Latest Updates Format
 
@@ -352,11 +404,19 @@ After major operations, verify:
 When a Member completes assigned work and marks it `READY_FOR_REVIEW`:
 
 - Active Work Locks must not keep that Member's writing lock.
-- Current Snapshot Next action should become `Lead or user reviews <task id>.`
-- Open Handoffs should keep only the Member to Lead/User review handoff.
+- Current Snapshot Next action should name the specific review target.
+- Open Handoffs should keep only the Member to target review handoff.
 - Remove any old Lead to Member handoff asking the Member to take the same completed task.
 - Latest Updates records the completion fact.
 - `TEAM_TASKS.md` status is `READY_FOR_REVIEW`.
+
+Completion Policy rules:
+
+- Lead review: Member finishes as `READY_FOR_REVIEW`; handoff target type is `actor`; target actor is the concrete Lead `actor_id`.
+- User review: Member finishes as `READY_FOR_REVIEW`; handoff target type is `human-user`; do not invent an Actor ID for the user.
+- Member self-completion: Member marks the task `DONE` when acceptance notes are met; do not create a review handoff.
+- Per-task decision: each task must record the selected completion policy. If it is missing, stop and ask.
+- Review loops are explicit: `CHANGES_REQUESTED -> IN_PROGRESS -> READY_FOR_REVIEW` for review policies, or `CHANGES_REQUESTED -> IN_PROGRESS -> DONE` for Member self-completion.
 
 ## What Not To Force
 

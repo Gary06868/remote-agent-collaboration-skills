@@ -1,4 +1,4 @@
-# Test Plan: Remote Agent Collaboration Lite
+﻿# Test Plan: Remote Agent Collaboration Lite
 
 ## Project Understanding
 
@@ -28,6 +28,10 @@ Because there is no runtime code, tests focus on static protocol contracts and e
 | TP-006 | Template completeness | Verify templates contain the operational sections needed by agents and Lead carries self-contained copies. | Template heading, content, and copy-install checks. |
 | TP-007 | Example flow | Verify the tiny-team example matches the advertised Lead/Member lifecycle and reconciled READY_FOR_REVIEW state. | Semantic consistency tests. |
 | TP-008 | Link/privacy integrity | Verify local Markdown links resolve and tracked public files do not expose local/private source terms. | Local link and privacy tests. |
+| TP-009 | Remote Git Mode | Verify a bare remote with two independent clones handles same-scope competition, different-scope parallel locks, and non-fast-forward rechecks. | Real Git integration tests in temporary directories. |
+| TP-010 | Completion policies | Verify Lead review, User review, Member self-completion, Per-task decision, and review loops are represented without fake Actor IDs. | `.collab/tasks` and `.collab/events` fixture tests. |
+| TP-011 | Install idempotency | Verify repeated copy installs remove stale files, avoid nested Skill dirs, preserve unrelated Skills, and keep Lead references. | Temporary install directory tests. |
+| TP-012 | CI | Verify GitHub Actions runs tests on push and pull_request for Ubuntu and Windows. | Workflow contract test. |
 
 ## Automated Test Command
 
@@ -51,6 +55,8 @@ py -m unittest discover -s tests -v
 - Confirm Lead behavior asks before enabling optional task or module ownership modes.
 - Confirm Actor Registry uses stable actor IDs rather than task names.
 - Confirm Current Snapshot, TEAM_TASKS.md, and Open Handoffs describe the same current state.
+- Confirm Remote Git Mode uses `.collab/locks`, `.collab/tasks`, `.collab/events`, and `.collab/snapshots` instead of requiring every agent to rewrite root aggregate files.
+- Confirm completion policy does not use `review target` as an Actor ID.
 - Confirm example files remain small enough for a new contributor to understand quickly.
 
 ## Review Findings
@@ -61,6 +67,9 @@ Resolved in the current Lite protocol:
 - `COLLAB_LOG.md` ordering is consistent: Active Work Locks appear before Current Snapshot because conflict avoidance depends on early lock visibility.
 - Open Handoffs only keeps unresolved handoffs; resolved or cancelled handoffs move to History / Archived Notes.
 - Actor identity fields now include human owner, agent platform, collaboration role, functional role, instance, actor ID, and display name.
+- Remote Git Mode adds low-conflict authoritative state and append-only events under `.collab/`.
+- Completion Policy is parameterized across Lead review, User review, Member self-completion, and Per-task decision.
+- Handoff targets distinguish actor targets from human-user targets.
 - `TEAM_TASKS.md` is now clearly tied to Task Assignment Mode. If the file exists while `AGENTS.md` says task mode is disabled, members treat it as legacy/reference material and ask before using or updating it.
 - Stale-lock handling is strict: mark or report stale status, but do not remove another actor's lock without user confirmation.
 - Default member completion in task mode is `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
@@ -70,5 +79,5 @@ Resolved in the current Lite protocol:
 
 - Status: executed.
 - Last command: `python -m unittest discover -s tests -v`
-- Result: PASS, 31 tests.
-- Notes: Current suite covers actor identity, log/task/handoff semantic consistency, install docs, self-contained Lead templates, E2E report, link checks, and privacy scan.
+- Result: PASS, 44 tests.
+- Notes: Current suite covers actor identity, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, link checks, CI workflow, and privacy scan.

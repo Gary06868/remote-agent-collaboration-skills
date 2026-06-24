@@ -1,4 +1,4 @@
-# Lite Collaboration E2E Report - 2026-06-24
+﻿# Lite Collaboration E2E Report - 2026-06-24
 
 This report records a sanitized Markdown-only fixture run for Remote Agent Collaboration Lite. It does not include temporary absolute paths, private tokens, or full chat transcripts.
 
@@ -52,7 +52,7 @@ Expected:
 
 - Morgan removes the writing lock.
 - `TEAM_TASKS.md` moves `TASK-001` to `READY_FOR_REVIEW`.
-- Current Snapshot says the next action is Lead or user review.
+- Current Snapshot says the next action is target reviewer review.
 - Open Handoffs keeps only the unresolved review handoff.
 - The old assignment handoff is archived as resolved.
 
@@ -74,4 +74,20 @@ Result:
 - Current Snapshot and task status agree: yes
 - Open Handoffs and History agree: yes
 - Timestamps include UTC offsets: yes
-- Privacy scan passed: pending final automated run
+- Privacy scan passed: covered by `test_public_files_do_not_leak_local_paths_or_private_source_terms`.
+
+## 0.4.0 Remote Git Follow-up
+
+The previous fixture showed why 0.4.0 adds Remote Git Mode:
+
+- Root `COLLAB_LOG.md` and `TEAM_TASKS.md` are convenient aggregates but become write hot spots.
+- Review targets must not write `review target` into an Actor ID field.
+- Different clones need a publish-and-recheck lock protocol, not only a local double-check.
+
+0.4.0 automated tests now use a temporary bare Git remote and two independent clones to verify:
+
+- Same-scope lock competition allows one actor to continue and blocks the loser.
+- Different-scope locks can both publish after non-fast-forward recovery and recheck.
+- Paused/stale/crash-recovery states remain Markdown state; ordinary Members do not delete another actor's stale lock.
+
+The test does not commit temporary clone paths or private environment details.
