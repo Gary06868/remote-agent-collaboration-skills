@@ -133,16 +133,23 @@ If no, do not create it. Members can still coordinate through `AGENTS.md` and `C
 
 Soft locks are collaboration notes, not security locks.
 
-`COLLAB_LOG.md` must keep `# Active Work Locks` near the top.
+`COLLAB_LOG.md` must keep the Active Work Locks section near the top.
 
 Before larger read/write work:
 
 1. Read Active Work Locks.
 2. If there is no overlap, add a lock for your own work.
 3. If there is overlap, do not edit. Explain the conflict and ask the user what to do.
-4. If a lock looks stale, mark it stale and ask before removing it.
+4. If a lock looks stale, mark or report it as stale. Do not remove another actor's lock without user confirmation.
 
 Suggested stale threshold: 2 hours.
+
+Treat these as likely overlaps:
+
+- Same file path.
+- Same folder or module.
+- A broad module lock that contains the requested file path.
+- A shared interface or contract that both tasks may change.
 
 Use this lock shape:
 
@@ -187,8 +194,8 @@ Git rules must include:
 
 ## COLLAB_LOG.md Must Include
 
-- Current Summary.
 - Active Work Locks.
+- Current Summary.
 - Active Blockers.
 - Recent Decisions.
 - Latest Updates.

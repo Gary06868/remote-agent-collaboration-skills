@@ -35,3 +35,4 @@ Task Assignment Mode is optional. Use this file only when the user wants lightwe
 - Keep tasks small enough for one contributor to understand.
 - Record owner and scope clearly.
 - Do not use this file when Casual Coordination Mode is enough.
+- Default Member completion status is `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.

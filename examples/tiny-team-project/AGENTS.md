@@ -29,7 +29,7 @@ If a new member has no specific sub-role, use `Full-stack Developer`.
 
 1. Read this file.
 2. Read `COLLAB_LOG.md`.
-3. Check `# Active Work Locks`.
+3. Check Active Work Locks.
 4. Read `TEAM_TASKS.md`.
 5. Check Git status before larger edits.
 6. Add a soft lock before editing when safe.
@@ -45,6 +45,8 @@ If another actor has a lock on the same scope, stop and ask the user.
 Do not delete another actor's lock without confirmation.
 
 Suggested stale threshold: 2 hours.
+
+If a lock looks stale, mark or report it as stale. Do not remove another actor's lock without user confirmation.
 
 ## Git Rules
 

@@ -27,8 +27,8 @@ Before editing:
 
 1. Read `AGENTS.md`.
 2. Read `COLLAB_LOG.md`.
-3. Check `# Active Work Locks`.
-4. If `TEAM_TASKS.md` exists, read your task or relevant task area.
+3. Check Active Work Locks.
+4. If Task Assignment Mode is enabled and `TEAM_TASKS.md` exists, read your task or relevant task area.
 5. If `MODULE_OWNERSHIP.md` exists, read the relevant module boundaries.
 6. If optional files do not exist, continue in Casual Coordination Mode.
 7. If the current actor name or sub-role is unclear, ask the user.
@@ -62,6 +62,13 @@ Before larger read/write work:
 3. If there is no overlap, add your own lock.
 4. If there is overlap, do not edit. Tell the user which actor owns the overlapping scope and ask for a decision.
 
+Treat these as likely overlaps:
+
+- Same file path.
+- Same folder or module.
+- A broad module lock that contains your file path.
+- A shared interface or contract that both tasks may change.
+
 Use this lock shape:
 
 ```markdown
@@ -77,7 +84,7 @@ Use this lock shape:
   Notes:
 ```
 
-If a lock looks stale, do not delete it yourself. Mark it as stale or ask whether the user considers the work finished. Suggested stale threshold: 2 hours.
+If a lock looks stale, do not delete it yourself. Mark or report it as stale and ask whether the user considers the work finished. Suggested stale threshold: 2 hours.
 
 ## What You May Do
 
@@ -85,10 +92,10 @@ If a lock looks stale, do not delete it yourself. Mark it as stale or ask whethe
 - Add your own soft lock when there is no conflict.
 - Modify files related to your assigned or requested scope.
 - Write a short update in `COLLAB_LOG.md`.
-- Update your own task status if `TEAM_TASKS.md` exists.
+- Update your own task status if Task Assignment Mode is enabled and `TEAM_TASKS.md` exists.
 - Record blockers and ask the Lead or user for a decision.
 - Remove your own lock after completing or pausing work.
-- In task mode, mark your work as `READY_FOR_REVIEW` or `DONE` according to `AGENTS.md`.
+- In task mode, mark your work as `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
 - In Casual Coordination Mode, write a completion summary without forcing review.
 
 ## What You Must Not Do
@@ -113,6 +120,8 @@ If `TEAM_TASKS.md` is absent:
 - Do not report an error.
 - Work from the user's current instruction.
 - Use `COLLAB_LOG.md` for a brief update.
+
+If `TEAM_TASKS.md` exists but `AGENTS.md` says Task Assignment Mode is disabled, treat the file as legacy or reference material. Ask before using or updating it.
 
 If `MODULE_OWNERSHIP.md` is absent:
 

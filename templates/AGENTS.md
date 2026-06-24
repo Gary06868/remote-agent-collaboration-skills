@@ -34,8 +34,8 @@ Before larger work:
 
 1. Read this file.
 2. Read `COLLAB_LOG.md`.
-3. Check `# Active Work Locks`.
-4. Read `TEAM_TASKS.md` if Task Assignment Mode is enabled.
+3. Check Active Work Locks.
+4. Read `TEAM_TASKS.md` if Task Assignment Mode is enabled and the file exists.
 5. Read `MODULE_OWNERSHIP.md` if Module Ownership Mode is enabled.
 6. Check Git state.
 7. Add a soft lock before editing when safe.
@@ -46,13 +46,22 @@ Soft locks are coordination notes, not security locks.
 
 Before larger read/write work, check `COLLAB_LOG.md`.
 
-If no lock overlaps your scope, add a lock under `# Active Work Locks`.
+If no lock overlaps your scope, add a lock under Active Work Locks.
 
 If a lock overlaps your scope, stop and ask the user or Lead before editing.
 
 Do not delete another actor's lock without confirmation.
 
+Treat these as likely overlaps:
+
+- Same file path.
+- Same folder or module.
+- A broad module lock that contains your file path.
+- A cross-module interface that both tasks may change.
+
 Suggested stale threshold: 2 hours.
+
+If a lock looks stale, mark or report it as stale. Do not remove another actor's lock without user confirmation.
 
 ## Git Rules
 

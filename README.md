@@ -100,8 +100,8 @@ At startup, the Member should:
 
 1. Read `AGENTS.md`.
 2. Read `COLLAB_LOG.md`.
-3. Check `# Active Work Locks`.
-4. Read `TEAM_TASKS.md` if it exists.
+3. Check Active Work Locks.
+4. Read `TEAM_TASKS.md` if Task Assignment Mode is enabled and the file exists.
 5. Read `MODULE_OWNERSHIP.md` if it exists.
 6. Continue in Casual Coordination Mode if optional files are absent.
 7. Ask the user for the current actor name or sub-role if it is unclear.
@@ -165,6 +165,8 @@ It uses only:
 
 Members work from the user's current instruction, check Active Work Locks before editing, and write concise updates afterward. There is no required task table or review queue.
 
+If `TEAM_TASKS.md` exists but `AGENTS.md` says Task Assignment Mode is disabled, treat the task file as legacy or reference material. Ask before using or updating it.
+
 ## Optional Task Assignment Mode
 
 Enable this only when the user wants formal task tracking.
@@ -180,6 +182,8 @@ When enabled, the Lead creates or updates `TEAM_TASKS.md` and uses simple status
 - `DONE`
 
 Task entries should stay practical: owner, scope, goal, acceptance notes, blocker, and last update.
+
+Default completion rule: after a Member finishes assigned work, mark it `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
 
 ## Optional Module Ownership Mode
 
@@ -199,7 +203,7 @@ If the user does not want module ownership, do not create the file.
 
 ## Active Work Locks
 
-`COLLAB_LOG.md` must keep `# Active Work Locks` near the top.
+`COLLAB_LOG.md` must keep the Active Work Locks section near the top.
 
 A lock is a soft coordination note:
 
@@ -216,11 +220,16 @@ A lock is a soft coordination note:
   Notes:
 ```
 
-Before larger read/write work, every agent should check for overlapping locks.
+Before larger read/write work, every agent should check for overlapping locks. Treat these as likely overlaps:
+
+- Same file path.
+- Same folder or module.
+- A broad module lock that contains your file path.
+- A cross-module interface that both tasks may change.
 
 If there is no conflict, add a lock with the actor, role, scope, and expected work. If there is a conflict, do not edit. Tell the user which actor owns the overlapping scope and ask what to do.
 
-If a lock looks stale, mark it as stale and ask before removing it. Suggested stale threshold: 2 hours.
+If a lock looks stale, mark or report it as stale, but do not remove another actor's lock without user confirmation. Suggested stale threshold: 2 hours.
 
 ## Markdown Files
 
