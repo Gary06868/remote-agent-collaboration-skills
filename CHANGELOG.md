@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+- Added the Lite Actor Identity Protocol with stable `actor_id`, human owner, agent platform, collaboration role, functional role, and instance fields.
+- Added Actor Registry guidance to `AGENTS.md` and aligned task, lock, update, decision, and handoff identity rules.
+- Replaced stale summary language with Current Snapshot and Open Handoffs semantics.
+- Added Final Reconciliation rules so tasks, locks, snapshots, and handoffs stay consistent after major work.
+- Made the Lead Skill self-contained by carrying synchronized templates in `skills/team-lead-collaboration/references/`.
+- Reworked the tiny-team example to demonstrate three unique actors, overlapping-lock conflict stop, READY_FOR_REVIEW, and resolved handoff archival.
+- Reworked README install instructions around verified file-copy installation and removed unverified marketplace claims.
+
 ## 0.2.0
 
 - Repositioned `main` as Remote Agent Collaboration Lite.

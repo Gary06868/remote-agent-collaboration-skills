@@ -23,26 +23,84 @@ Help one project owner, maintainer, or coordination thread organize multiple hum
 
 You maintain:
 
-- `AGENTS.md` for project rules.
-- `COLLAB_LOG.md` for Active Work Locks, updates, blockers, and decisions.
+- `AGENTS.md` for project rules and Actor Registry.
+- `COLLAB_LOG.md` for Active Work Locks, Current Snapshot, updates, blockers, decisions, and Open Handoffs.
 - `TEAM_TASKS.md` only when Task Assignment Mode is enabled.
 - `MODULE_OWNERSHIP.md` only when Module Ownership Mode is enabled.
+
+Self-contained templates live beside this Skill in `references/`:
+
+- `references/AGENTS.template.md`
+- `references/COLLAB_LOG.template.md`
+- `references/TEAM_TASKS.template.md`
+- `references/MODULE_OWNERSHIP.template.md`
+
+Use those templates when only the two Skill folders are installed. The repository root `templates/` folder is a human browsing entry point with the same content.
 
 ## Start Here
 
 1. Inspect the current project before writing.
-2. Check Git state before larger changes:
+2. Check whether this is a Git repository:
 
    ```bash
-   git fetch --all --prune
+   git rev-parse --is-inside-work-tree
+   ```
+
+3. If it is not a Git repository, tell the user, ask whether they want Git initialized, continue Markdown collaboration setup if Git is not needed, and do not run `git fetch`.
+4. If it is a Git repository, run:
+
+   ```bash
    git status --short --branch
    git branch -vv
    ```
 
-3. Decide whether this is an empty project or an existing project.
-4. Read existing `README.md`, `AGENTS.md`, project config files, and docs when present.
-5. Respect existing project rules and architecture.
-6. Create or update only the collaboration files that are needed.
+5. Run `git fetch --all --prune` only when a remote exists. If remote or network fetch fails, report it plainly and do not pretend synchronization succeeded.
+6. Decide whether this is an empty project or an existing project.
+7. Read existing `README.md`, `AGENTS.md`, project config files, and docs when present.
+8. Respect existing project rules and architecture.
+9. Create or update only the collaboration files that are needed.
+
+## Actor Identity Bootstrap
+
+The Lead Skill fixes:
+
+- Collaboration role: Lead
+
+Do not ask again whether the actor is Lead or Member.
+
+Before writing collaboration state, establish the Lead actor identity:
+
+- Human owner:
+- Agent platform:
+- Collaboration role:
+- Functional role:
+- Instance:
+- Actor ID:
+- Display name:
+
+Rules:
+
+- If the human owner is unknown, ask the user.
+- If the agent platform cannot be determined reliably, ask the user.
+- If the functional role is unclear, ask the user.
+- Use `Full-stack Developer` only when the user says no functional sub-role is needed.
+- Do not use a task name as actor identity.
+- Keep `actor_id` stable once written.
+- Do not auto-create identities such as generic setup actors or task-based workers.
+
+Suggested ID pattern:
+
+```yaml
+human_owner: Gary
+agent_platform: Codex
+collaboration_role: Lead
+functional_role: Project Coordinator
+instance: 01
+actor_id: gary-codex-lead-coordinator-01
+display_name: Gary's Codex #01 (Lead - Project Coordinator)
+```
+
+Register the Lead in `AGENTS.md` under Actor Registry. Lead may also register and maintain team actors when the user provides identity details.
 
 ## Empty Project
 
@@ -117,6 +175,21 @@ If not enabled, use Casual Coordination Mode:
 
 Only create `TEAM_TASKS.md` after the user chooses task mode.
 
+When Task Assignment Mode is enabled, ask one short follow-up:
+
+```text
+Who may mark tasks DONE?
+```
+
+Allowed completion policies:
+
+- Lead review
+- User review
+- Member self-completion
+- Per-task decision
+
+Write the selected Completion Policy into `AGENTS.md`. Do not default every project to Lead review unless the user chooses it.
+
 ## Required Question: Module Ownership Mode
 
 Ask the user:
@@ -135,14 +208,26 @@ Soft locks are collaboration notes, not security locks.
 
 `COLLAB_LOG.md` must keep the Active Work Locks section near the top.
 
+Quick reads of `AGENTS.md`, `COLLAB_LOG.md`, and task files do not need a lock. Larger research or analysis may use a `reading` lock.
+
+Conflict semantics:
+
+- reading with reading does not conflict by default.
+- writing with overlapping writing is a conflict.
+- reading with overlapping writing requires a warning.
+- If reading is only observation, it may continue.
+- If reading is likely to become editing soon, ask first or switch scope.
+- paused still reserves the scope.
+- stale threshold: 2 hours unless `AGENTS.md` overrides it.
+- Do not remove another actor's stale lock without user or Lead confirmation.
+
 Before larger read/write work:
 
-1. Read Active Work Locks.
-2. If there is no overlap, add a lock for your own work.
-3. If there is overlap, do not edit. Explain the conflict and ask the user what to do.
-4. If a lock looks stale, mark or report it as stale. Do not remove another actor's lock without user confirmation.
-
-Suggested stale threshold: 2 hours.
+1. Read the latest `COLLAB_LOG.md`.
+2. Check for overlapping locks.
+3. If there is no overlap, add a lock for your own work.
+4. double-check Active Work Locks after writing your own lock.
+5. If another actor created an overlapping lock at the same time, do not edit business files. Explain the conflict and wait for a decision.
 
 Treat these as likely overlaps:
 
@@ -151,12 +236,15 @@ Treat these as likely overlaps:
 - A broad module lock that contains the requested file path.
 - A shared interface or contract that both tasks may change.
 
+Use repository-relative paths for Scope. Prefer concrete files or directories. Do not record local absolute paths.
+
 Use this lock shape:
 
 ```markdown
-- Actor:
-  Agent:
-  Role:
+- Actor ID:
+  Display Name:
+  Collaboration Role: Lead | Member
+  Functional Role:
   Status: reading | writing | paused
   Scope:
   Task:
@@ -172,7 +260,10 @@ When work is complete, remove your lock and add a short entry under Latest Updat
 
 - Project Overview.
 - Collaboration Mode.
-- Actor Naming.
+- Project Time.
+- Actor Identity Protocol.
+- Actor Registry.
+- Completion Policy.
 - Startup Checklist.
 - Active Work Lock Rules.
 - Git Rules.
@@ -180,29 +271,92 @@ When work is complete, remove your lock and add a short entry under Latest Updat
 - Logging Rules.
 - Conflict Handling.
 - Completion / Handoff Rules.
+- Final Reconciliation.
 - When To Ask The User.
-
-Git rules must include:
-
-- Run `git fetch --all --prune`, `git status --short --branch`, and `git branch -vv` before larger tasks.
-- Stop and ask when unsure whether a change may overwrite someone else's work.
-- Do not use blind `git add .`.
-- Explicitly stage only files related to the current change.
-- Do not commit secrets, caches, temporary files, dependency folders, or runtime data.
-- Do not force push, hard reset, or delete branches unless the user explicitly approves.
-- Confirm the branch and remote before pushing.
 
 ## COLLAB_LOG.md Must Include
 
 - Active Work Locks.
-- Current Summary.
+- Current Snapshot.
 - Active Blockers.
+- Open Handoffs.
 - Recent Decisions.
 - Latest Updates.
-- Handoffs.
 - History / Archived Notes.
 
 Keep log entries short. Do not paste entire chats.
+
+Open Handoffs only keeps unresolved handoffs:
+
+- `open`
+- `accepted`
+
+Move `resolved` and `cancelled` handoffs to History / Archived Notes.
+
+## Latest Updates Format
+
+Small changes may use a one-line log. Major work uses:
+
+```markdown
+### <timestamp> - <actor-id>
+
+- Display Name:
+- Collaboration Role:
+- Functional Role:
+- Type:
+- Task:
+- Scope:
+- Files:
+- Result:
+- Checks:
+- Git:
+- Blockers:
+- Next:
+```
+
+`Git` is optional. If there is no commit, write `Not committed`. Do not invent commit SHAs. Do not put full chat transcripts, Skill download evidence, or sandbox paths in the normal project log.
+
+## Log Compression
+
+Keep Markdown-only log compression lightweight:
+
+1. Preserve all Active Work Locks.
+2. Preserve all Active Blockers.
+3. Preserve all Open Handoffs.
+4. Preserve still-valid important decisions.
+5. Rewrite Current Snapshot.
+6. Preserve recent important updates.
+7. Move resolved old updates to History / Archived Notes.
+8. If the log is very long, create `docs/collaboration/archive/COLLAB_LOG_YYYY-MM.md`.
+9. Leave an archive link in the main `COLLAB_LOG.md`.
+10. Do not delete unresolved content.
+11. Do not make an AI summary the only history source.
+12. Do not add hashes, manifests, runtime tools, or databases.
+
+## Final Reconciliation
+
+After major operations, verify:
+
+- Active Work Locks match the real state.
+- Your completed work no longer leaves a stale writing lock.
+- TEAM_TASKS.md status matches the real state.
+- Current Snapshot reflects the latest work.
+- Next action matches the latest state.
+- Open Handoffs only contain unresolved items.
+- No old handoff asks a Member to redo an already completed task.
+- Recent Decisions match the current mode.
+- actor_id is consistent across AGENTS.md, COLLAB_LOG.md, TEAM_TASKS.md, and MODULE_OWNERSHIP.md.
+- Timestamps use the project timezone and UTC offset.
+- Files do not contradict each other.
+
+When a Member completes assigned work and marks it `READY_FOR_REVIEW`:
+
+- Active Work Locks must not keep that Member's writing lock.
+- Current Snapshot Next action should become `Lead or user reviews <task id>.`
+- Open Handoffs should keep only the Member to Lead/User review handoff.
+- Remove any old Lead to Member handoff asking the Member to take the same completed task.
+- Latest Updates records the completion fact.
+- `TEAM_TASKS.md` status is `READY_FOR_REVIEW`.
 
 ## What Not To Force
 
@@ -220,7 +374,9 @@ Ask the user when:
 
 - Project rules conflict.
 - The project already has a collaboration log.
-- The current actor or sub-role is unclear.
+- The human owner is unknown.
+- The agent platform cannot be determined reliably.
+- The functional role is unclear.
 - Task mode or module ownership has not been chosen.
 - A soft lock conflicts with the requested work.
 - A lock looks stale.
@@ -235,5 +391,7 @@ When done, report:
 - Files created or updated.
 - Whether Task Assignment Mode is enabled.
 - Whether Module Ownership Mode is enabled.
+- Completion Policy, if task mode is enabled.
+- Actor IDs registered or updated.
 - Any active locks or blockers.
 - Recommended next step for Lead or Members.

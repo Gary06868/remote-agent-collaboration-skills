@@ -1,38 +1,135 @@
 # Remote Agent Collaboration Lite
 
-If you and a few friends, cofounders, or AI agents are vibe coding together, your project can quickly turn into scattered chats, duplicate edits, and unclear ownership. Remote Agent Collaboration Lite gives you two Markdown Skills, Lead and Member, plus simple project files for rules, soft locks, logs, optional tasks, and optional module boundaries. No server, no database, no CLI, no hooks.
+If you are vibe coding with friends, cofounders, contractors, or several AI agents, this is the lightweight coordination layer you want before the repo turns into scattered chats and duplicate edits.
 
-Install both Skills:
+Remote Agent Collaboration Lite gives your small team two Markdown Skills, Lead and Member, plus shared project files for actor identity, soft locks, logs, optional tasks, and optional module boundaries. No server, no database, no CLI, no hooks.
+
+Install both Skills. Use one role per thread.
 
 - `team-lead-collaboration`
 - `team-member-collaboration`
 
-Open one Lead thread with:
+Start one Lead thread:
 
 ```text
 $team-lead-collaboration Set up lightweight collaboration for this project.
 ```
 
-Open Member threads with:
+Start Member threads:
 
 ```text
 $team-member-collaboration Work on my assigned scope and update the shared collaboration log.
 ```
 
-The team coordinates through Markdown files:
+```mermaid
+flowchart LR
+  A["Install both Skills"] --> B["Lead inspects project"]
+  B --> C["Lead creates AGENTS + COLLAB_LOG"]
+  C --> D["Member registers identity"]
+  D --> E["Member checks and adds lock"]
+  E --> F["Member works"]
+  F --> G["Member reconciles task/log/handoff"]
+  G --> H["Lead or user decides next step"]
+```
 
-- `AGENTS.md` for shared project rules.
-- `COLLAB_LOG.md` for active work locks, updates, blockers, and decisions.
-- `TEAM_TASKS.md` when you choose task assignment mode.
-- `MODULE_OWNERSHIP.md` when you choose module ownership mode.
+## 60-Second Install
+
+Install both Skills. Use one role per thread.
+
+This repository ships plain Skill folders. The tested install path is file copy. The current local Codex CLI has plugin commands, but no verified non-interactive Skill install/list command for these standalone folders, so this README does not claim a marketplace install path.
+
+### Copy-paste prompt for an AI Agent
+
+```text
+Install both Remote Agent Collaboration Lite Skills from this repository by copying:
+- skills/team-lead-collaboration
+- skills/team-member-collaboration
+
+Use the user-level Codex Skills folder when available:
+~/.codex/skills
+
+After installation, verify both Skills are visible:
+- team-lead-collaboration
+- team-member-collaboration
+
+Then start a fresh thread and activate exactly one role with either:
+$team-lead-collaboration
+or:
+$team-member-collaboration
+
+Do not activate the other role in the same thread.
+```
+
+### User-level install
+
+Run these commands from the repository root.
+
+Windows PowerShell:
+
+```powershell
+$skills = Join-Path $env:USERPROFILE ".codex\skills"
+New-Item -ItemType Directory -Force $skills | Out-Null
+Copy-Item -Recurse -Force .\skills\team-lead-collaboration (Join-Path $skills "team-lead-collaboration")
+Copy-Item -Recurse -Force .\skills\team-member-collaboration (Join-Path $skills "team-member-collaboration")
+Get-ChildItem $skills | Where-Object Name -in @("team-lead-collaboration", "team-member-collaboration")
+```
+
+macOS/Linux shell:
+
+```bash
+mkdir -p "$HOME/.codex/skills"
+cp -R skills/team-lead-collaboration "$HOME/.codex/skills/team-lead-collaboration"
+cp -R skills/team-member-collaboration "$HOME/.codex/skills/team-member-collaboration"
+find "$HOME/.codex/skills" -maxdepth 1 -type d \( -name team-lead-collaboration -o -name team-member-collaboration \)
+```
+
+### Project-level install
+
+Use this when you want to vendor the Skills into a project repository for repeatable setup. Copy them into a project-local folder, then copy or symlink them into each agent's actual Skill directory if that environment does not auto-discover project-local Skills.
+
+Windows PowerShell:
+
+```powershell
+New-Item -ItemType Directory -Force .\.codex\skills | Out-Null
+Copy-Item -Recurse -Force .\skills\team-lead-collaboration .\.codex\skills\team-lead-collaboration
+Copy-Item -Recurse -Force .\skills\team-member-collaboration .\.codex\skills\team-member-collaboration
+Get-ChildItem .\.codex\skills
+```
+
+macOS/Linux shell:
+
+```bash
+mkdir -p .codex/skills
+cp -R skills/team-lead-collaboration .codex/skills/team-lead-collaboration
+cp -R skills/team-member-collaboration .codex/skills/team-member-collaboration
+find .codex/skills -maxdepth 1 -type d
+```
+
+Installed directory shape:
+
+```text
+.codex/skills/
+  team-lead-collaboration/
+    SKILL.md
+    references/
+      AGENTS.template.md
+      COLLAB_LOG.template.md
+      TEAM_TASKS.template.md
+      MODULE_OWNERSHIP.template.md
+  team-member-collaboration/
+    SKILL.md
+```
+
+Verify both Skills are visible in your AI coding environment's Skill picker or model-visible Skill list:
+
+- `team-lead-collaboration`
+- `team-member-collaboration`
 
 ## What This Is
 
 Remote Agent Collaboration Lite is a Markdown-only collaboration workflow for one project lead and multiple contributors. Contributors can be humans, Codex threads, Claude threads, other AI agents, or a mix of all of them.
 
 It does not try to enforce permissions. It gives agents explicit instructions to read the same project files, claim work before editing, avoid conflicting scopes, and leave short handoff notes.
-
-## Who It Is For
 
 Use it when:
 
@@ -42,17 +139,57 @@ Use it when:
 - You need lightweight logs and soft locks instead of a full project management system.
 - You want a new contributor to understand the collaboration rules in five minutes.
 
-## What Problems It Solves
+## Core Files
 
-- Scattered chat history becomes shared Markdown context.
-- Duplicate edits are reduced by checking Active Work Locks first.
-- Ownership is visible when optional module boundaries are enabled.
-- Task mode is available when useful, but casual coordination stays the default.
-- Members know when to stop and ask instead of guessing through conflicts.
+| File | Required | Purpose |
+| --- | --- | --- |
+| `AGENTS.md` | Yes | Shared project rules, Actor Registry, startup checklist, Git rules, logging rules, and conflict handling. |
+| `COLLAB_LOG.md` | Yes | Active locks, Current Snapshot, blockers, Open Handoffs, decisions, updates, and history. |
+| `TEAM_TASKS.md` | Optional | Lightweight task blocks when Task Assignment Mode is enabled. |
+| `MODULE_OWNERSHIP.md` | Optional | Module owners and path boundaries when Module Ownership Mode is enabled. |
+
+Templates are available in [`templates/`](templates/). The Lead Skill also carries identical self-contained templates in [`skills/team-lead-collaboration/references/`](skills/team-lead-collaboration/references/).
+
+## Actor Identity Protocol
+
+Every Lead, Member, lock, task, update, decision, and handoff should use a stable actor identity.
+
+Required fields:
+
+- Human owner:
+- Agent platform:
+- Collaboration role:
+- Functional role:
+- Instance:
+- Actor ID:
+- Display name:
+
+Example:
+
+```yaml
+human_owner: Gary
+agent_platform: Codex
+collaboration_role: Member
+functional_role: Frontend Developer
+instance: 01
+actor_id: gary-codex-member-frontend-01
+display_name: Gary's Codex #01 (Member - Frontend Developer)
+```
+
+Rules:
+
+- Lead Skill means `Collaboration role: Lead`.
+- Member Skill means `Collaboration role: Member`.
+- Do not ask again whether the actor is Lead or Member.
+- If the human owner is unknown, ask the user.
+- If the agent platform cannot be determined reliably, ask the user.
+- If the functional role is unclear, ask the user.
+- Do not use a task name as actor identity.
+- Keep `actor_id` stable across `AGENTS.md`, `COLLAB_LOG.md`, `TEAM_TASKS.md`, and `MODULE_OWNERSHIP.md`.
 
 ## Quick Start
 
-1. Install both Skills in your AI coding environment.
+1. Install both Skills.
 2. Start a Lead thread:
 
    ```text
@@ -60,157 +197,30 @@ Use it when:
    ```
 
 3. The Lead checks whether the project is empty or already has structure.
-4. The Lead creates or updates `AGENTS.md` and `COLLAB_LOG.md`.
-5. The Lead asks whether to enable Task Assignment Mode.
-6. The Lead asks whether to enable Module Ownership Mode.
-7. Start one or more Member threads:
+4. The Lead confirms actor identity and registers it in `AGENTS.md`.
+5. The Lead creates or updates `AGENTS.md` and `COLLAB_LOG.md`.
+6. The Lead asks whether to enable Task Assignment Mode.
+7. If task mode is enabled, the Lead asks: "Who may mark tasks DONE?"
+8. The Lead asks whether to enable Module Ownership Mode.
+9. Start one or more Member threads:
 
    ```text
    $team-member-collaboration Read the collaboration files and work on the scope I give you.
    ```
 
-8. Each Member checks Active Work Locks before editing, adds a lock when safe, removes it when done, and writes a short update.
-
-## Lead Thread Workflow
-
-The Lead is for the project owner, project maintainer, collaboration organizer, or an AI thread responsible for coordinating multiple workers.
-
-The Lead should:
-
-- Read the existing project structure before writing.
-- Create or maintain `AGENTS.md`.
-- Create or maintain `COLLAB_LOG.md`.
-- Explain that soft locks are coordination notes, not security controls.
-- Ask: "Do you want to enable Task Assignment Mode?"
-- If enabled, create or update `TEAM_TASKS.md`.
-- Ask: "Do you want to define module boundaries and owners now?"
-- If enabled, create or update `MODULE_OWNERSHIP.md`.
-- Assign work when task mode is useful.
-- Review member output when needed.
-- Resolve conflicts and blockers.
-- Summarize or compress long collaboration logs.
-
-The Lead should not force every project into formal task tracking or module ownership.
-
-## Member Thread Workflow
-
-The Member is for a contributor, implementer, module developer, AI worker, or another AI coding thread.
-
-At startup, the Member should:
-
-1. Read `AGENTS.md`.
-2. Read `COLLAB_LOG.md`.
-3. Check Active Work Locks.
-4. Read `TEAM_TASKS.md` if Task Assignment Mode is enabled and the file exists.
-5. Read `MODULE_OWNERSHIP.md` if it exists.
-6. Continue in Casual Coordination Mode if optional files are absent.
-7. Ask the user for the current actor name or sub-role if it is unclear.
-
-During work, the Member should:
-
-- Add a soft lock before larger read/write work if no conflict exists.
-- Stop and ask if another active lock overlaps the requested scope.
-- Edit only files related to the assigned or requested work.
-- Write a short update when done.
-- Update its own task status if task mode is enabled.
-- Remove its own lock when work is complete.
-
-## Empty Project Setup
-
-For an empty or nearly empty folder, the Lead may create:
-
-- `AGENTS.md`
-- `COLLAB_LOG.md`
-
-The Lead may also suggest a light folder structure, but should not generate a heavy architecture unless the user asks for it.
-
-The Lead should ask for or infer:
-
-- Project name.
-- Project goal.
-- Expected tech stack.
-- Whether task assignment mode is needed.
-- Whether module ownership mode is needed.
-- Whether a starter directory layout is wanted.
-
-## Existing Project Setup
-
-For an existing project, the Lead must inspect the current structure before adding collaboration files. At minimum, check:
-
-- Existing `README.md`.
-- Existing `AGENTS.md`, if present.
-- Tech stack files such as `package.json`, `pyproject.toml`, `Cargo.toml`, or `go.mod`.
-- Directories such as `src`, `app`, `lib`, `docs`, `tests`, `frontend`, or `backend`.
-- Existing contribution or project rule files.
-- Current Git status.
-
-The Lead should respect the existing architecture. Do not rearrange folders just to match this workflow.
-
-If the project already has rules or logs, merge carefully. If there is a conflict between existing project rules and the default Lite workflow, stop and ask:
-
-```text
-There is a conflict between existing project rules and the default collaboration workflow. Do you want to prioritize the existing project rules or adopt the recommended Lite rules?
-```
-
-Default recommendation: existing project rules win.
-
-## Casual Coordination Mode
-
-Casual Coordination Mode is the default.
-
-It uses only:
-
-- `AGENTS.md`
-- `COLLAB_LOG.md`
-
-Members work from the user's current instruction, check Active Work Locks before editing, and write concise updates afterward. There is no required task table or review queue.
-
-If `TEAM_TASKS.md` exists but `AGENTS.md` says Task Assignment Mode is disabled, treat the task file as legacy or reference material. Ask before using or updating it.
-
-## Optional Task Assignment Mode
-
-Enable this only when the user wants formal task tracking.
-
-When enabled, the Lead creates or updates `TEAM_TASKS.md` and uses simple statuses:
-
-- `BACKLOG`
-- `ASSIGNED`
-- `IN_PROGRESS`
-- `BLOCKED`
-- `READY_FOR_REVIEW`
-- `CHANGES_REQUESTED`
-- `DONE`
-
-Task entries should stay practical: owner, scope, goal, acceptance notes, blocker, and last update.
-
-Default completion rule: after a Member finishes assigned work, mark it `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
-
-## Optional Module Ownership Mode
-
-Enable this only when path or module boundaries matter.
-
-When enabled, the Lead creates or updates `MODULE_OWNERSHIP.md` with:
-
-- Module names.
-- Owners.
-- Allowed paths.
-- Avoid or protected paths.
-- Interface notes.
-- Risks.
-- Cross-module notes.
-
-If the user does not want module ownership, do not create the file.
+10. Each Member confirms identity, checks Active Work Locks, adds a lock when safe, removes it when done, and runs Final Reconciliation.
 
 ## Active Work Locks
 
-`COLLAB_LOG.md` must keep the Active Work Locks section near the top.
+`COLLAB_LOG.md` must keep Active Work Locks near the top.
 
 A lock is a soft coordination note:
 
 ```markdown
-- Actor:
-  Agent:
-  Role:
+- Actor ID:
+  Display Name:
+  Collaboration Role: Lead | Member
+  Functional Role:
   Status: reading | writing | paused
   Scope:
   Task:
@@ -220,27 +230,100 @@ A lock is a soft coordination note:
   Notes:
 ```
 
-Before larger read/write work, every agent should check for overlapping locks. Treat these as likely overlaps:
+Use repository-relative paths for Scope. Prefer concrete files or directories. Do not record local absolute paths.
 
-- Same file path.
-- Same folder or module.
-- A broad module lock that contains your file path.
-- A cross-module interface that both tasks may change.
+Conflict semantics:
 
-If there is no conflict, add a lock with the actor, role, scope, and expected work. If there is a conflict, do not edit. Tell the user which actor owns the overlapping scope and ask what to do.
+- reading with reading does not conflict by default.
+- writing with overlapping writing is a conflict.
+- reading with overlapping writing requires a warning.
+- If reading is only observation, it may continue.
+- If reading is likely to become editing soon, ask first or switch scope.
+- paused still reserves the scope.
+- stale threshold: 2 hours unless `AGENTS.md` overrides it.
+- Do not remove another actor's stale lock without user or Lead confirmation.
 
-If a lock looks stale, mark or report it as stale, but do not remove another actor's lock without user confirmation. Suggested stale threshold: 2 hours.
+Before larger work, read the latest `COLLAB_LOG.md`, check locks, add your own lock if safe, then double-check Active Work Locks after writing your own lock. Markdown soft locks are not atomic. If a race appears, stop before editing business files and ask the user or Lead.
 
-## Markdown Files
+## Current Snapshot And Open Handoffs
 
-| File | Required | Purpose |
-| --- | --- | --- |
-| `AGENTS.md` | Yes | Shared project rules, startup checklist, Git rules, logging rules, and conflict handling. |
-| `COLLAB_LOG.md` | Yes | Active locks, current summary, blockers, decisions, updates, handoffs, and history. |
-| `TEAM_TASKS.md` | Optional | Lightweight task table when Task Assignment Mode is enabled. |
-| `MODULE_OWNERSHIP.md` | Optional | Module owners and path boundaries when Module Ownership Mode is enabled. |
+`COLLAB_LOG.md` uses Current Snapshot instead of stale summaries:
 
-Templates are available in [`templates/`](templates/).
+- Stage:
+- Current focus:
+- Active work:
+- Next action:
+- Last updated:
+- Updated by:
+
+Open Handoffs only contains unresolved handoffs:
+
+- `open`
+- `accepted`
+
+Move `resolved` and `cancelled` handoffs to History / Archived Notes.
+
+When a Member completes `TASK-001` and marks it `READY_FOR_REVIEW`:
+
+- Active Work Locks no longer keeps that Member's writing lock.
+- Current Snapshot says `Next action: Lead or user reviews TASK-001.`
+- Open Handoffs keeps only the Member to Lead/User review handoff.
+- No old Lead to Member handoff asks that Member to retake the completed task.
+- Latest Updates records the completion.
+- `TEAM_TASKS.md` status is `READY_FOR_REVIEW`.
+
+## Final Reconciliation
+
+Both Skills must reconcile state after major work:
+
+- Active Work Locks match the real state.
+- TEAM_TASKS.md status matches the real state.
+- Current Snapshot reflects the latest work.
+- Open Handoffs only contain unresolved items.
+- Recent Decisions match the current mode.
+- `actor_id` is consistent across collaboration files.
+- Timestamps use the project timezone and UTC offset.
+- Files do not contradict each other.
+
+## Git Rules
+
+The Skills do not assume every project has Git or a remote.
+
+Start with:
+
+```bash
+git rev-parse --is-inside-work-tree
+```
+
+If it is not a Git repository, tell the user, ask whether to initialize Git, continue Markdown collaboration setup if Git is not needed, and do not run `git fetch`.
+
+If it is a Git repository, run:
+
+```bash
+git status --short --branch
+git branch -vv
+```
+
+Only run `git fetch --all --prune` when a remote exists. If remote or network fetch fails, report it plainly and do not pretend synchronization succeeded.
+
+## Modes
+
+Casual Coordination Mode is the default. It uses only:
+
+- `AGENTS.md`
+- `COLLAB_LOG.md`
+
+Task Assignment Mode is optional. When enabled, `TEAM_TASKS.md` uses:
+
+- `BACKLOG`
+- `ASSIGNED`
+- `IN_PROGRESS`
+- `BLOCKED`
+- `READY_FOR_REVIEW`
+- `CHANGES_REQUESTED`
+- `DONE`
+
+Module Ownership Mode is optional. If the user does not want module ownership, do not create `MODULE_OWNERSHIP.md`.
 
 ## Example Tiny Team Flow
 
@@ -248,11 +331,15 @@ See [`examples/tiny-team-project`](examples/tiny-team-project/).
 
 The example shows:
 
-- Lead initializes `AGENTS.md` and `COLLAB_LOG.md`.
-- User enables Task Assignment Mode.
-- User skips Module Ownership Mode for now.
-- Member checks locks, adds a lock, completes work, removes the lock, and writes a short update.
-- Lead summarizes the log and updates the plan.
+- Alex's Codex #01 acting as Lead.
+- Morgan's Claude #01 acting as Member for content.
+- Alex's Codex #02 acting as a second Member for testing.
+- Task Assignment Mode enabled.
+- Module Ownership Mode not enabled yet.
+- One Member adding a lock.
+- A second Member detecting an overlapping lock and stopping before editing.
+- The first Member completing work, removing the lock, and moving `TASK-001` to `READY_FOR_REVIEW`.
+- Current Snapshot and Open Handoffs staying consistent with the task state.
 
 ## Limitations
 
@@ -261,6 +348,10 @@ The example shows:
 - It does not prevent someone from ignoring the rules.
 - It works because agents are instructed to read and follow shared Markdown files.
 - It is intentionally not a server, database, CLI, hook system, or enterprise permission model.
+
+## Version
+
+Current Lite protocol version: `0.3.0`.
 
 ## Advanced Branches
 

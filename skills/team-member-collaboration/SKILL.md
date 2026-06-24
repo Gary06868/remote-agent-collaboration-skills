@@ -28,13 +28,56 @@ Before editing:
 1. Read `AGENTS.md`.
 2. Read `COLLAB_LOG.md`.
 3. Check Active Work Locks.
-4. If Task Assignment Mode is enabled and `TEAM_TASKS.md` exists, read your task or relevant task area.
-5. If `MODULE_OWNERSHIP.md` exists, read the relevant module boundaries.
-6. If optional files do not exist, continue in Casual Coordination Mode.
-7. If the current actor name or sub-role is unclear, ask the user.
-8. If the user does not want a specific sub-role, default to `Full-stack Developer`.
+4. Confirm or register your actor identity.
+5. If Task Assignment Mode is enabled and `TEAM_TASKS.md` exists, read your task or relevant task area.
+6. If `MODULE_OWNERSHIP.md` exists, read the relevant module boundaries.
+7. If optional files do not exist, continue in Casual Coordination Mode.
+8. If the current actor name or sub-role is unclear, ask the user.
+9. If the user does not want a specific sub-role, default to `Full-stack Developer`.
 
 If `AGENTS.md` or `COLLAB_LOG.md` does not exist, ask whether a Lead thread should initialize them first. Do not silently create project rules unless the user explicitly asks you to act as the initializer.
+
+## Actor Identity Bootstrap
+
+The Member Skill fixes:
+
+- Collaboration role: Member
+
+Do not ask again whether the actor is Lead or Member.
+
+Before editing collaboration state, establish your actor identity:
+
+- Human owner:
+- Agent platform:
+- Collaboration role:
+- Functional role:
+- Instance:
+- Actor ID:
+- Display name:
+
+Rules:
+
+- If the human owner is unknown, ask the user.
+- If the agent platform cannot be determined reliably, ask the user.
+- If the functional role is unclear, ask the user.
+- Use `Full-stack Developer` only when the user says no functional sub-role is needed.
+- Do not use a task name as actor identity.
+- Keep `actor_id` stable once written.
+- If you are not in Actor Registry, ask the user for identity details before adding yourself.
+- You may add or update only your own Actor Registry entry after user confirmation.
+- Do not modify other actors' identities.
+
+Suggested ID pattern:
+
+```yaml
+human_owner: Gary
+agent_platform: Codex
+collaboration_role: Member
+functional_role: Frontend Developer
+instance: 01
+actor_id: gary-codex-member-frontend-01
+display_name: Gary's Codex #01 (Member - Frontend Developer)
+```
 
 ## Project State Awareness
 
@@ -51,16 +94,50 @@ For an existing project:
 - Do not reorganize folders by default.
 - If existing rules conflict with the user's request, stop and ask which rule wins.
 
+## Git Awareness
+
+Before larger tasks, check whether this is a Git repository:
+
+```bash
+git rev-parse --is-inside-work-tree
+```
+
+If it is not a Git repository, tell the user, ask whether they want Git initialized, continue Markdown coordination if Git is not needed, and do not run `git fetch`.
+
+If it is a Git repository, run:
+
+```bash
+git status --short --branch
+git branch -vv
+```
+
+Run `git fetch --all --prune` only when a remote exists. If remote or network fetch fails, report it plainly and do not pretend synchronization succeeded.
+
 ## Soft Lock Check
 
 Soft locks are collaboration notes, not security locks.
 
+Quick reads of `AGENTS.md`, `COLLAB_LOG.md`, and task files do not need a lock. Larger research or analysis may use a `reading` lock.
+
+Conflict semantics:
+
+- reading with reading does not conflict by default.
+- writing with overlapping writing is a conflict.
+- reading with overlapping writing requires a warning.
+- If reading is only observation, it may continue.
+- If reading is likely to become editing soon, ask first or switch scope.
+- paused still reserves the scope.
+- stale threshold: 2 hours unless `AGENTS.md` overrides it.
+- Do not remove another actor's stale lock without user or Lead confirmation.
+
 Before larger read/write work:
 
-1. Read Active Work Locks in `COLLAB_LOG.md`.
-2. Compare the requested scope with existing locks.
-3. If there is no overlap, add your own lock.
-4. If there is overlap, do not edit. Tell the user which actor owns the overlapping scope and ask for a decision.
+1. Read the latest `COLLAB_LOG.md`.
+2. Check Active Work Locks in `COLLAB_LOG.md`.
+3. Compare the requested scope with existing locks.
+4. If there is no overlap, add your own lock.
+5. double-check Active Work Locks after writing your own lock.
+6. If another actor created an overlapping lock at the same time, do not edit business files. Tell the user which actor owns the overlapping scope and ask for a decision.
 
 Treat these as likely overlaps:
 
@@ -69,12 +146,15 @@ Treat these as likely overlaps:
 - A broad module lock that contains your file path.
 - A shared interface or contract that both tasks may change.
 
+Use repository-relative paths for Scope. Prefer concrete files or directories. Do not record local absolute paths.
+
 Use this lock shape:
 
 ```markdown
-- Actor:
-  Agent:
-  Role:
+- Actor ID:
+  Display Name:
+  Collaboration Role: Lead | Member
+  Functional Role:
   Status: reading | writing | paused
   Scope:
   Task:
@@ -84,7 +164,7 @@ Use this lock shape:
   Notes:
 ```
 
-If a lock looks stale, do not delete it yourself. Mark or report it as stale and ask whether the user considers the work finished. Suggested stale threshold: 2 hours.
+If a lock looks stale, do not delete it yourself. Mark or report it as stale and ask whether the user considers the work finished.
 
 ## What You May Do
 
@@ -97,6 +177,7 @@ If a lock looks stale, do not delete it yourself. Mark or report it as stale and
 - Remove your own lock after completing or pausing work.
 - In task mode, mark your work as `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
 - In Casual Coordination Mode, write a completion summary without forcing review.
+- Update factual Current Snapshot and Next action after your work, without changing project goals, rules, or major decisions unless the user confirms.
 
 ## What You Must Not Do
 
@@ -109,6 +190,7 @@ If a lock looks stale, do not delete it yourself. Mark or report it as stale and
 - Do not edit files unrelated to your task.
 - Do not continue when an active lock conflicts with your scope.
 - Do not delete another actor's lock without user confirmation.
+- Do not modify another actor's Actor Registry entry.
 - Do not declare the whole project complete.
 
 ## Optional Files
@@ -150,15 +232,62 @@ When you finish, pause, or hit a blocker:
 2. Add a concise entry under Latest Updates in `COLLAB_LOG.md`.
 3. Mention changed files, result, tests or checks run, and blockers.
 4. If task mode is enabled, update your task status.
+5. Update Current Snapshot and Open Handoffs if your work changed the real state.
 
-Do not paste long chat transcripts.
+Major updates use:
+
+```markdown
+### <timestamp> - <actor-id>
+
+- Display Name:
+- Collaboration Role:
+- Functional Role:
+- Type:
+- Task:
+- Scope:
+- Files:
+- Result:
+- Checks:
+- Git:
+- Blockers:
+- Next:
+```
+
+If there is no commit, write `Not committed`. Do not invent commit SHAs. Do not paste long chat transcripts.
+
+## Final Reconciliation
+
+After major operations, verify:
+
+- Active Work Locks match the real state.
+- Your completed work no longer leaves a stale writing lock.
+- TEAM_TASKS.md status matches the real state.
+- Current Snapshot reflects the latest work.
+- Next action matches the latest state.
+- Open Handoffs only contain unresolved items.
+- No old handoff asks you or another Member to redo an already completed task.
+- Recent Decisions match the current mode.
+- actor_id is consistent across AGENTS.md, COLLAB_LOG.md, TEAM_TASKS.md, and MODULE_OWNERSHIP.md.
+- Timestamps use the project timezone and UTC offset.
+- Files do not contradict each other.
+
+When you complete assigned work and mark it `READY_FOR_REVIEW`:
+
+- Remove your writing lock from Active Work Locks.
+- Set Current Snapshot Next action to `Lead or user reviews <task id>.`
+- Keep only the Member to Lead/User review handoff in Open Handoffs.
+- Move any Lead to Member handoff for the completed task to History / Archived Notes.
+- Record the completion in Latest Updates.
+- Ensure `TEAM_TASKS.md` status is `READY_FOR_REVIEW`.
 
 ## When To Ask
 
 Ask the user when:
 
 - There is no Lead thread and the collaboration files are missing.
-- The current actor name or sub-role is unclear.
+- The human owner is unknown.
+- The agent platform cannot be determined reliably.
+- The functional role is unclear.
 - You cannot find your task.
 - Module boundaries are unclear.
 - A lock conflicts with your work.
@@ -172,9 +301,11 @@ Ask briefly. Do not ask many unrelated questions at once.
 
 When done, report:
 
+- Actor ID used.
 - Scope worked on.
 - Files changed.
 - Lock removed or updated.
 - Task status, if task mode is enabled.
 - Checks run.
 - Blockers or handoff notes.
+- Final Reconciliation result.

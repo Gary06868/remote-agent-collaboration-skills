@@ -1,34 +1,26 @@
-# Tiny Team Project Example
+# Tiny Team Website Example
 
-This example shows how Remote Agent Collaboration Lite works in a small project with one Lead thread and one Member thread.
+This tiny fixture shows a Lite collaboration state after one Lead and two Members coordinate on a small website README.
 
-The team chooses:
+Scenario:
 
-- Casual Coordination Mode as the base mode.
 - Task Assignment Mode enabled.
 - Module Ownership Mode not enabled yet.
+- The Lead creates `TEAM_TASKS.md`.
+- The Member reads `AGENTS.md`, `COLLAB_LOG.md`, and `TEAM_TASKS.md`.
+- Alex's Codex #01 is the Lead and project coordinator.
+- Morgan's Claude #01 is a Member and content developer.
+- Alex's Codex #02 is a second Member and test engineer.
 
-Files:
+What the example demonstrates:
 
-- `AGENTS.md`: project rules and Git collaboration rules.
-- `COLLAB_LOG.md`: Active Work Locks and short updates.
-- `TEAM_TASKS.md`: optional task tracking.
+- Actor IDs are stable and unique.
+- The same human owner can run multiple Codex instances with different instance numbers.
+- A Member adds a writing lock for `README.md`.
+- A second Member detects the overlapping lock and stops before editing business files.
+- The first Member finishes TASK-001, removes the lock, and marks the task READY_FOR_REVIEW.
+- Current Snapshot says the next action is Lead or user review.
+- Open Handoffs contains only the unresolved review handoff.
+- The old Lead-to-Member assignment handoff is archived as resolved.
 
-## Flow
-
-1. The Lead starts with `$team-lead-collaboration`.
-2. The Lead checks that this is an existing tiny web project.
-3. The Lead creates `AGENTS.md` and `COLLAB_LOG.md`.
-4. The Lead asks: "Do you want to enable Task Assignment Mode?"
-5. The user says yes.
-6. The Lead creates `TEAM_TASKS.md`.
-7. The Lead asks: "Do you want to define module boundaries and owners now?"
-8. The user says not yet.
-9. The Member starts with `$team-member-collaboration`.
-10. The Member reads `AGENTS.md`, `COLLAB_LOG.md`, and `TEAM_TASKS.md`.
-11. The Member checks Active Work Locks.
-12. The Member adds a lock for `README.md`.
-13. The Member finishes, removes the lock, and writes a Latest Update.
-14. The Lead summarizes the log and updates the next plan.
-
-This example is intentionally small. It is a workflow pattern, not an enterprise process.
+This example intentionally stays small. It is a semantic fixture for the Markdown protocol, not a full project management demo.
