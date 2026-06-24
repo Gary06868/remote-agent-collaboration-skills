@@ -1,8 +1,0 @@
-name: team-member-collaboration
-description: "Collaboration Member, explicit invocation only. Works on assigned tasks inside authorized modules."
-interface:
-  display_name: "Collaboration Member"
-  icon_small: "./assets/member.svg"
-  icon_large: "./assets/member.svg"
-policy:
-  allow_implicit_invocation: false

@@ -1,126 +1,262 @@
-﻿# Remote Agent Collaboration Skills
+# Remote Agent Collaboration Lite
 
-给小团队、小公司、开源协作和多人 AI vibe coding 用的 Codex 协作管理层。
+如果你和几个朋友、合伙人或 AI Agent 一起 vibe coding，一个项目很快会变成散乱聊天记录、重复修改和不清楚的任务归属。Remote Agent Collaboration Lite 用两个 Markdown Skill：Lead 和 Member，再加几个简单项目文件，把协作规则、软锁、日志、可选任务和可选模块边界固定下来。不需要服务器、不需要数据库、不需要 CLI、不需要 hooks。
 
-同时安装两个 Skill，但每个 Codex thread 只能激活一个角色。
+同时安装两个 Skill：
 
-<p>
-  <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-0f766e">
-  <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-2563eb">
-  <img alt="Tests passing" src="https://img.shields.io/badge/tests-passing-16a34a">
-  <img alt="Phase 0 hook gated" src="https://img.shields.io/badge/Phase%200-hook%20gated-f59e0b">
-</p>
+- `team-lead-collaboration`
+- `team-member-collaboration`
 
-![演示](docs/assets/demo.gif)
-
-上面的动画由 `scripts/generate_demo.py` 根据真实 `collabctl` 命令生成，覆盖 Skill 验证、lead 激活、同线程 member 被拒绝、member 工作、请求日志压缩、lead 压缩日志和 SHA-256 校验。
-
-如果你正在让多个人类和多个 AI Agent 一起做项目，这个 Skill 解决的是协作失控问题：谁是 lead、谁是 member、谁能发全局公告、谁只能改自己的模块、日志什么时候压缩、任务状态怎么流转，都用同一套本地协议记录下来。
-
-适合这些场景：
-
-- 小团队或小公司用 Codex 共同推进一个代码库
-- 多个 Codex thread 同时工作，但每个 thread 必须保持固定角色
-- lead 负责分配任务、审核、公告和日志压缩，member 只处理授权模块
-- 把 vibe coding 从聊天驱动变成可追踪、可审计、可交接的协作流程
-
-> Phase 0 由 hook 真实观测作为门禁。只有在 `/hooks` 中信任插件 hooks、新建 Codex thread、hook 读取到真实 `session_id` 并写入 `.collaboration-local/session-locks/<session_id>.json` 后，`collabctl doctor --json` 才会报告 `role_lock_enforced: true`。本地 `--session-id` 或 `COLLAB_SESSION_ID` 只是测试/调试 fallback，doctor 会保持 `role_lock_enforced: false`。
-
-快速入口：[Agent 安装](#给-ai-agent安装两个-skill每个线程只激活一个角色) · [快速开始](#快速开始) · [角色模型](#角色模型) · [示例项目](examples/vibe-coding-team/README.md) · [English README](README.md)
-
-## 它管理什么
-
-- **角色：** 两个显式入口，`$team-lead-collaboration` 和 `$team-member-collaboration`。
-- **线程角色锁：** 一个 Codex thread 激活角色后不应切换；缺少 session 上下文时 `collabctl` 对角色写操作 fail closed。
-- **项目协作：** 成员、模块、任务分配、任务状态、handoff、公告、确认、请求和审核流。
-- **运行记忆：** append-only JSONL 日志、模块摘要、日志压缩 archive 和 SHA-256 校验记录。
-- **Agent 安装路径：** marketplace 元数据、两个 Skill、hooks、doctor 输出和 `/hooks` 信任说明。
-
-## 给 AI Agent：安装两个 Skill，每个线程只激活一个角色
-
-新 Agent 可以只读本节完成安装。
-
-1. 添加 marketplace：
-
-   ```bash
-   codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
-   ```
-
-   如果当前网络阻止 HTTPS clone，可使用已测试通过的 SSH over 443 备用路径：
-
-   ```bash
-   codex plugin marketplace add ssh://git@ssh.github.com:443/Gary06868/remote-agent-collaboration-skills.git
-   ```
-
-2. 打开 `/plugins`，安装 **Remote Agent Collaboration**。
-3. 验证两个 Skill 都已安装且名称不同：
-   - `team-lead-collaboration`
-   - `team-member-collaboration`
-4. 打开 `/hooks`，审核并信任 hooks。
-5. 新建 Codex thread。
-6. 明确调用其中一个：
-
-   ```text
-   $team-lead-collaboration Initialize and govern collaboration for this project as the registered lead actor.
-   ```
-
-   或：
-
-   ```text
-   $team-member-collaboration Read current announcements, accept my assigned task, and work only inside my authorized module.
-   ```
-
-7. 不得在同一个 thread 调用另一个角色。
-8. 运行：
-
-   ```bash
-   collabctl doctor --json
-   ```
-
-9. 报告安装路径、Plugin 状态、hook 状态和 `role_lock_enforced`。
-
-如果 hooks 未被信任，或信任后没有新建 thread，doctor 必须保持 unhealthy 且 `role_lock_enforced: false`。修复步骤是打开 `/hooks` 信任 hooks，新建 thread，激活一个角色，再运行 doctor。
-
-可复制给 Agent 的安装指令：
+开一个 Lead thread：
 
 ```text
-Install the remote-agent-collaboration plugin from Gary06868/remote-agent-collaboration-skills. Install both bundled Skills. Do not activate either role during installation. Open /hooks, review and trust hooks, start a new Codex thread, choose exactly one role with $team-lead-collaboration or $team-member-collaboration, run collabctl doctor --json, and report plugin status, hook status, installed paths, and role_lock_enforced.
+$team-lead-collaboration Set up lightweight collaboration for this project.
 ```
 
-当前 CLI 说明：本机 `codex-cli 0.130.0-alpha.5` 只有 `codex plugin marketplace add|upgrade|remove` 和交互式 `/plugins`，没有 `codex plugin add --json` 或 `codex plugin list --json`。如果新版 CLI 支持自动化安装/列表命令，必须用真实测试结果更新文档。
+开 Member thread：
+
+```text
+$team-member-collaboration Work on my assigned scope and update the shared collaboration log.
+```
+
+团队通过 Markdown 文件协作：
+
+- `AGENTS.md`：共享项目规则。
+- `COLLAB_LOG.md`：当前工作锁、更新、阻塞和决策。
+- `TEAM_TASKS.md`：当你启用任务分配模式时使用。
+- `MODULE_OWNERSHIP.md`：当你启用模块 ownership 时使用。
+
+## 这是什么
+
+Remote Agent Collaboration Lite 是一个纯 Markdown 协作流程，适合一个项目 Lead 和多个贡献者一起工作。贡献者可以是真人、Codex thread、Claude thread、其他 AI Agent，或者它们的组合。
+
+它不是权限系统。它让 Agent 明确读取同一组项目文件，编辑前声明工作范围，避免冲突，并在完成后留下简短交接记录。
+
+## 给谁用
+
+适合这些情况：
+
+- 小团队或小公司在同一个仓库里开发。
+- 多个 AI thread 可能修改相关文件。
+- 你希望有一个 Lead Agent 负责协调，但不想引入基础设施。
+- 你需要轻量日志和软锁，而不是完整项目管理系统。
+- 你希望新成员 5 分钟内理解协作规则。
+
+## 解决什么问题
+
+- 分散聊天记录变成共享 Markdown 上下文。
+- 通过 Active Work Locks 减少重复修改。
+- 启用可选模块边界时，owner 和路径范围更清楚。
+- 需要时可以启用任务模式，但默认仍保持轻量。
+- Member 遇到冲突时知道该停止询问，而不是继续猜。
 
 ## 快速开始
 
-```bash
-python -m pip install -e .
-collabctl init --project-id demo --yes
-collabctl actor bootstrap --actor-id lead --role lead --yes
-collabctl session activate --session-id thread-lead --role lead --skill team-lead-collaboration --actor-id lead
-collabctl doctor --json
+1. 在你的 AI coding 环境中安装两个 Skill。
+2. 启动 Lead thread：
+
+   ```text
+   $team-lead-collaboration Initialize collaboration for this existing project.
+   ```
+
+3. Lead 判断项目是空项目还是已有项目。
+4. Lead 创建或更新 `AGENTS.md` 和 `COLLAB_LOG.md`。
+5. Lead 询问是否启用 Task Assignment Mode。
+6. Lead 询问是否启用 Module Ownership Mode。
+7. 启动一个或多个 Member thread：
+
+   ```text
+   $team-member-collaboration Read the collaboration files and work on the scope I give you.
+   ```
+
+8. 每个 Member 编辑前检查 Active Work Locks，无冲突时添加 lock，完成后移除 lock 并写简短更新。
+
+## Lead Thread 工作流
+
+Lead 适合项目 owner、项目负责人、协作组织者，或负责协调多个 worker 的 AI thread。
+
+Lead 应该：
+
+- 写入前先读取现有项目结构。
+- 创建或维护 `AGENTS.md`。
+- 创建或维护 `COLLAB_LOG.md`。
+- 说明软锁只是协作记录，不是安全控制。
+- 主动询问："Do you want to enable Task Assignment Mode?"
+- 如果启用，创建或更新 `TEAM_TASKS.md`。
+- 主动询问："Do you want to define module boundaries and owners now?"
+- 如果启用，创建或更新 `MODULE_OWNERSHIP.md`。
+- 在任务模式有用时分配工作。
+- 按需 review member 输出。
+- 处理冲突和阻塞。
+- 总结或压缩过长的协作日志。
+
+Lead 不应该强制每个项目进入正式任务表或模块 ownership。
+
+## Member Thread 工作流
+
+Member 适合普通贡献者、执行者、模块开发者、AI worker 或另一个 AI coding thread。
+
+每次开始时，Member 应该：
+
+1. 读取 `AGENTS.md`。
+2. 读取 `COLLAB_LOG.md`。
+3. 检查 `# Active Work Locks`。
+4. 如果存在 `TEAM_TASKS.md`，读取自己的任务。
+5. 如果存在 `MODULE_OWNERSHIP.md`，读取相关模块边界。
+6. 如果可选文件不存在，按 Casual Coordination Mode 工作，不报错。
+7. 如果当前 actor 名称或子角色不清楚，询问用户。
+
+工作中，Member 应该：
+
+- 较大读写任务开始前，在无冲突时添加 soft lock。
+- 如果已有 lock 和当前范围重叠，停止并询问。
+- 只修改与当前任务或用户请求相关的文件。
+- 完成后写简短更新。
+- 如果启用了任务模式，更新自己的任务状态。
+- 完成后移除自己的 lock。
+
+## 空项目设置
+
+对于空目录或基本空目录，Lead 可以创建：
+
+- `AGENTS.md`
+- `COLLAB_LOG.md`
+
+Lead 也可以建议轻量目录结构，但不要在用户没有要求时生成复杂架构。
+
+Lead 应询问或推断：
+
+- 项目名称。
+- 项目目标。
+- 技术栈。
+- 是否需要任务分配模式。
+- 是否需要模块 ownership。
+- 是否需要建议目录结构。
+
+## 已有项目设置
+
+对于已有项目，Lead 必须先检查当前结构，再添加协作文件。至少检查：
+
+- 现有 `README.md`。
+- 现有 `AGENTS.md`，如果存在。
+- 技术栈文件，例如 `package.json`、`pyproject.toml`、`Cargo.toml` 或 `go.mod`。
+- `src`、`app`、`lib`、`docs`、`tests`、`frontend`、`backend` 等目录。
+- 现有贡献指南或项目规则。
+- 当前 Git 状态。
+
+Lead 应尊重现有架构。不要为了这个 workflow 强行重排文件夹。
+
+如果项目已有规则或日志，谨慎合并。如果现有项目规则和 Lite 默认规则冲突，停止并询问：
+
+```text
+There is a conflict between existing project rules and the default collaboration workflow. Do you want to prioritize the existing project rules or adopt the recommended Lite rules?
 ```
 
-上面的命令使用 CLI fallback，session lock 会带 `fallback: true`。在真实 Codex hooks 被信任并运行前，doctor 应显示 `fallback_mode: true` 且 `role_lock_enforced: false`。
+默认建议：已有项目规则优先。
 
-也可以用环境变量做本地调试：
+## Casual Coordination Mode
 
-```bash
-COLLAB_SESSION_ID=thread-lead collabctl session status
+Casual Coordination Mode 是默认模式。
+
+它只使用：
+
+- `AGENTS.md`
+- `COLLAB_LOG.md`
+
+Member 根据用户当前指令工作，编辑前检查 Active Work Locks，完成后写简短更新。不强制任务表或 review 队列。
+
+## 可选 Task Assignment Mode
+
+只有用户希望正式追踪任务时才启用。
+
+启用后，Lead 创建或更新 `TEAM_TASKS.md`，并使用简单状态：
+
+- `BACKLOG`
+- `ASSIGNED`
+- `IN_PROGRESS`
+- `BLOCKED`
+- `READY_FOR_REVIEW`
+- `CHANGES_REQUESTED`
+- `DONE`
+
+任务条目保持实用即可：owner、范围、目标、验收说明、阻塞、最近更新。
+
+## 可选 Module Ownership Mode
+
+只有路径或模块边界重要时才启用。
+
+启用后，Lead 创建或更新 `MODULE_OWNERSHIP.md`，记录：
+
+- 模块名称。
+- owner。
+- 允许路径。
+- 避免或受保护路径。
+- 接口说明。
+- 风险。
+- 跨模块备注。
+
+如果用户暂时不需要 module ownership，不创建该文件。
+
+## Active Work Locks
+
+`COLLAB_LOG.md` 必须把 `# Active Work Locks` 放在靠前位置。
+
+lock 是软协作记录：
+
+```markdown
+- Actor:
+  Agent:
+  Role:
+  Status: reading | writing | paused
+  Scope:
+  Task:
+  Started:
+  Last Updated:
+  Expected Finish:
+  Notes:
 ```
 
-Windows PowerShell：
+任何较大的读写任务开始前，Agent 都应该检查是否有重叠 lock。
 
-```powershell
-$env:COLLAB_SESSION_ID = "thread-lead"
-collabctl session status
-```
+如果没有冲突，添加自己的 lock，写明 actor、role、scope 和预计工作。如果有冲突，不要编辑。告诉用户哪个 actor 正在处理重叠范围，并询问下一步。
 
-fallback ID 不能证明线程级互斥。真实路径是：`UserPromptSubmit` 记录角色选择，`PreToolUse` 在运行 `collabctl` 前刷新真实 session 上下文，`SubagentStart` 把父线程 session 注入子线程上下文。
+如果 lock 看起来过期，不要直接删除。先标记 stale，再询问用户。建议 stale 时间：2 小时。
 
-## 角色模型
+## Markdown 文件
 
-| 角色 | Skill | 允许 | 禁止 |
-| --- | --- | --- | --- |
-| Lead | `$team-lead-collaboration` | 成员、模块、任务、公告、审核、日志压缩治理 | 在同线程切换到 member |
-| Member | `$team-member-collaboration` | 处理分配任务、确认公告、写授权模块日志、创建 request | 审核自己、压缩日志、修改全局策略、切换到 lead |
+| 文件 | 必需 | 用途 |
+| --- | --- | --- |
+| `AGENTS.md` | 是 | 共享项目规则、启动检查、Git 规则、日志规则和冲突处理。 |
+| `COLLAB_LOG.md` | 是 | 当前锁、当前摘要、阻塞、决策、更新、交接和历史。 |
+| `TEAM_TASKS.md` | 可选 | 启用任务分配模式时使用的轻量任务表。 |
+| `MODULE_OWNERSHIP.md` | 可选 | 启用模块 ownership 时记录 owner 和路径边界。 |
 
-Hooks 只是防护栏；确定性校验由 `collabctl` 执行。
+模板在 [`templates/`](templates/)。
+
+## Tiny Team 示例
+
+见 [`examples/tiny-team-project`](examples/tiny-team-project/)。
+
+示例展示：
+
+- Lead 初始化 `AGENTS.md` 和 `COLLAB_LOG.md`。
+- 用户启用 Task Assignment Mode。
+- 用户暂不启用 Module Ownership Mode。
+- Member 检查 locks，添加 lock，完成工作，移除 lock，并写简短更新。
+- Lead 总结日志并更新计划。
+
+## 限制
+
+- 这是软协作流程。
+- 它不执行操作系统级权限。
+- 它不能阻止某个人或某个 Agent 忽略规则。
+- 它依赖 Agent 读取并遵守共享 Markdown 文件。
+- 它有意不是服务器、数据库、CLI、hook 系统或企业权限模型。
+
+## 高级分支
+
+Advanced local protocol experiments are preserved on the `standard-local-protocol` branch.
+
+## English
+
+See [README.md](README.md).

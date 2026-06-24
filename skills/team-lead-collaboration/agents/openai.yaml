@@ -1,8 +1,0 @@
-name: team-lead-collaboration
-description: "Collaboration Lead, explicit invocation only. Governs members, modules, tasks, announcements, and reviews."
-interface:
-  display_name: "Collaboration Lead"
-  icon_small: "./assets/lead.svg"
-  icon_large: "./assets/lead.svg"
-policy:
-  allow_implicit_invocation: false
