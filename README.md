@@ -1,8 +1,8 @@
-﻿# Remote Agent Collaboration Lite
+# Remote Agent Collaboration Lite
 
 If you are vibe coding with friends, cofounders, contractors, or several AI agents, this is the lightweight coordination layer you want before the repo turns into scattered chats and duplicate edits.
 
-Remote Agent Collaboration Lite gives your small team two Markdown Skills, Lead and Member, plus shared project files for actor identity, soft locks, logs, optional tasks, and optional module boundaries. No server, no database, no CLI, no hooks.
+Remote Agent Collaboration Lite gives your small team two Markdown Skills, Lead and Member, plus shared project files for actor identity, soft locks, logs, optional tasks, and optional module boundaries. No server, no database, no custom collaboration CLI, no hooks.
 
 Install both Skills. Use one role per thread.
 
@@ -36,7 +36,7 @@ flowchart LR
 
 Install both Skills. Use one role per thread.
 
-This repository ships plain Skill folders. The tested install path is file copy. The current local Codex CLI has plugin commands, but no verified non-interactive Skill install/list command for these standalone folders, so this README does not claim a marketplace install path.
+This repository ships plain Skill folders. The tested install path is file copy. It does not require or install a custom collaboration CLI.
 
 ### Copy-paste prompt for an AI Agent
 
@@ -135,6 +135,10 @@ Verify both Skills are visible in your AI coding environment's Skill picker or m
 - `team-lead-collaboration`
 - `team-member-collaboration`
 
+### Codex and Claude compatibility
+
+These Skills are plain Markdown folders. Codex can use them through its Skill system. Claude or other AI agents can read the same `SKILL.md` files as project instructions when their environment does not expose a native Skill picker. The collaboration files remain ordinary Markdown either way.
+
 ## What This Is
 
 Remote Agent Collaboration Lite is a Markdown-only collaboration workflow for one project lead and multiple contributors. Contributors can be humans, Codex threads, Claude threads, other AI agents, or a mix of all of them.
@@ -160,17 +164,17 @@ Use it when:
 
 Templates are available in [`templates/`](templates/). The Lead Skill also carries identical self-contained templates in [`skills/team-lead-collaboration/references/`](skills/team-lead-collaboration/references/).
 
-## Collaboration Modes
+## Workspace Topology
 
-Remote Agent Collaboration Lite has two explicit collaboration modes.
+Choose the workspace topology first. This answers where agents are working, not which task workflow the team uses.
 
 ### Shared Workspace Mode
 
 Shared Workspace Mode is for multiple agents using the same working directory. Agents coordinate through the root Markdown files, use local Active Work Locks, and double-check Active Work Locks after writing your own lock before editing business files.
 
-### Remote Git Mode
+### Remote Git Mode (Beta)
 
-Remote Git Mode is for different machines, clones, or worktrees coordinating through a Git remote. Git is only the synchronization transport. It is not a permission service, a lock server, or a runtime daemon.
+Remote Git Mode is a beta topology for different machines, clones, or worktrees coordinating through a Git remote. Git is only the synchronization transport. It is not a permission service, a lock server, or a runtime daemon.
 
 Do not mix assumptions between these modes. Shared Workspace Mode can rely on the same working directory and immediate local reads. Remote Git Mode must assume another participant can publish changes from a different clone between any two local commands.
 
@@ -401,7 +405,7 @@ git branch -vv
 
 Only run `git fetch --all --prune` when a remote exists. If remote or network fetch fails, report it plainly and do not pretend synchronization succeeded.
 
-## Modes
+## Workflow Options
 
 Casual Coordination Mode is the default. It uses only:
 
@@ -419,6 +423,8 @@ Task Assignment Mode is optional. When enabled, `TEAM_TASKS.md` uses:
 - `DONE`
 
 Module Ownership Mode is optional. If the user does not want module ownership, do not create `MODULE_OWNERSHIP.md`.
+
+Workflow Options are independent of Workspace Topology. For example, a team can use Task Assignment Mode in either Shared Workspace Mode or Remote Git Mode (Beta).
 
 ## Example Tiny Team Flow
 
@@ -442,7 +448,7 @@ The example shows:
 - It does not enforce OS-level permissions.
 - It does not prevent someone from ignoring the rules.
 - It works because agents are instructed to read and follow shared Markdown files.
-- It is intentionally not a server, database, CLI, hook system, or enterprise permission model.
+- It is intentionally not a server, database, custom collaboration CLI, hook system, or enterprise permission model.
 
 ## Version
 

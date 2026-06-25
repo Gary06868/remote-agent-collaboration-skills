@@ -118,7 +118,11 @@ class ProductBoundaryTests(unittest.TestCase):
             english,
             [
                 "Remote Agent Collaboration Lite",
-                "No server, no database, no CLI, no hooks.",
+                "No server, no database, no custom collaboration CLI, no hooks.",
+                "Workspace Topology",
+                "Workflow Options",
+                "Remote Git Mode (Beta)",
+                "Codex and Claude compatibility",
                 "It does not try to enforce permissions.",
                 "soft locks",
                 "team-lead-collaboration",
@@ -131,7 +135,11 @@ class ProductBoundaryTests(unittest.TestCase):
             chinese,
             [
                 "Remote Agent Collaboration Lite",
-                "不需要服务器、不需要数据库、不需要 CLI、不需要 hooks。",
+                "不需要服务器、不需要数据库、不需要自定义协作 CLI、不需要 hooks。",
+                "Workspace Topology",
+                "Workflow Options",
+                "Remote Git Mode (Beta)",
+                "Codex 和 Claude 兼容性",
                 "它不是权限系统。",
                 "软锁",
                 "team-lead-collaboration",
@@ -764,6 +772,11 @@ class E2EReportTests(unittest.TestCase):
 
 
 class MarkdownLinkAndPrivacyTests(unittest.TestCase):
+    def test_readmes_are_utf8_without_bom(self) -> None:
+        for path in [README, README_ZH]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                self.assertFalse(path.read_bytes().startswith(b"\xef\xbb\xbf"))
+
     def test_local_markdown_links_resolve(self) -> None:
         files = [
             README,
