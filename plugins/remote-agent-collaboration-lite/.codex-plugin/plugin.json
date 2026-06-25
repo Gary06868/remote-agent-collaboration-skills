@@ -1,0 +1,44 @@
+{
+  "name": "remote-agent-collaboration-lite",
+  "version": "0.5.0",
+  "description": "Markdown collaboration for small human and AI teams.",
+  "author": {
+    "name": "Gary06868",
+    "url": "https://github.com/Gary06868"
+  },
+  "homepage": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+  "repository": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "skills",
+    "collaboration",
+    "markdown",
+    "ai-agents",
+    "vibe-coding"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Remote Agent Collaboration Lite",
+    "shortDescription": "Markdown collaboration for small human and AI teams.",
+    "longDescription": "Install two independent Markdown Skills, Lead and Member, for lightweight coordination across small human and AI teams. No server, no database, no hooks, and no custom collaboration CLI.",
+    "developerName": "Gary06868",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "$team-lead-collaboration Set up lightweight collaboration.",
+      "$team-member-collaboration Work on my assigned scope."
+    ],
+    "websiteURL": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+    "privacyPolicyURL": "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
+    "termsOfServiceURL": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+    "brandColor": "#2563EB",
+    "composerIcon": "./assets/plugin-icon.svg",
+    "logo": "./assets/plugin-icon.svg",
+    "screenshots": []
+  }
+}

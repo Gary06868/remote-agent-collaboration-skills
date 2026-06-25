@@ -1,4 +1,4 @@
-﻿# Project Agents Guide
+# Project Agents Guide
 
 ## Project Overview
 

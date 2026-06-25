@@ -1,4 +1,4 @@
-﻿# Team Tasks
+# Team Tasks
 
 Task Assignment Mode is optional. Use this file only when the user wants lightweight task tracking.
 

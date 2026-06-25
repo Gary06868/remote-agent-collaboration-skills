@@ -1,4 +1,4 @@
-﻿# Lite Collaboration E2E Report - 2026-06-24
+# Lite Collaboration E2E Report - 2026-06-24
 
 This report records a sanitized Markdown-only fixture run for Remote Agent Collaboration Lite. It does not include temporary absolute paths, private tokens, or full chat transcripts.
 

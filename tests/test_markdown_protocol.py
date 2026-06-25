@@ -118,7 +118,8 @@ class ProductBoundaryTests(unittest.TestCase):
             english,
             [
                 "Remote Agent Collaboration Lite",
-                "No server, no database, no custom collaboration CLI, no hooks.",
+                "No server, no database, no hooks, and no custom collaboration CLI.",
+                "Just Markdown files and optional Git.",
                 "Workspace Topology",
                 "Workflow Options",
                 "Remote Git Mode (Beta)",
@@ -135,12 +136,14 @@ class ProductBoundaryTests(unittest.TestCase):
             chinese,
             [
                 "Remote Agent Collaboration Lite",
-                "不需要服务器、不需要数据库、不需要自定义协作 CLI、不需要 hooks。",
+                "hooks",
+                "Markdown",
                 "Workspace Topology",
                 "Workflow Options",
                 "Remote Git Mode (Beta)",
-                "Codex 和 Claude 兼容性",
-                "它不是权限系统。",
+                "Codex",
+                "Claude",
+                "权限系统",
                 "软锁",
                 "team-lead-collaboration",
                 "team-member-collaboration",
@@ -193,7 +196,7 @@ class SkillContractTests(unittest.TestCase):
                 "name: team-lead-collaboration",
                 "Use only when the user explicitly selects $team-lead-collaboration",
                 "Do not use this Skill implicitly.",
-                "Do not claim hard permission enforcement, role locks, hooks, a CLI, or a server.",
+                "Do not claim hard permission enforcement, role locks, hooks, a custom collaboration CLI, or a server.",
                 "Do not use this Skill when the user wants you to act only as a task executor",
             ],
         )
@@ -207,7 +210,7 @@ class SkillContractTests(unittest.TestCase):
                 "name: team-member-collaboration",
                 "Use only when the user explicitly selects $team-member-collaboration",
                 "Do not use this Skill implicitly.",
-                "Do not claim hard permission enforcement, role locks, hooks, a CLI, or a server.",
+                "Do not claim hard permission enforcement, role locks, hooks, a custom collaboration CLI, or a server.",
                 "Do not use this Skill when the user asks you to initialize collaboration rules",
             ],
         )
@@ -712,18 +715,18 @@ class InstallDocsTests(unittest.TestCase):
             self,
             text,
             [
-                "## 60-Second Install",
-                "Copy-paste prompt for an AI Agent",
-                "Project-level install",
+                "## Install",
+                "### Option 1 - Codex Plugin (preferred)",
+                "Adding the marketplace does not install the Plugin.",
+                "Open `/plugins`",
+                "### Option 3 - Manual Copy",
                 "Windows PowerShell",
                 "macOS/Linux shell",
-                "Installed directory shape",
                 "Verify both Skills are visible",
                 "Install both Skills. Use one role per thread.",
             ],
         )
-        self.assertNotIn("codex plugin marketplace add", text)
-        self.assertNotIn("codex plugin add", text)
+        self.assertNotIn("```powershell\ncodex plugin add", text)
 
     def test_chinese_readme_has_matching_agent_install_section(self) -> None:
         text = read(README_ZH)
@@ -731,12 +734,13 @@ class InstallDocsTests(unittest.TestCase):
             self,
             text,
             [
-                "## 60 秒安装",
-                "给 AI Agent 的可复制安装 Prompt",
-                "项目级安装",
+                "## Install",
+                "### Option 1 - Codex Plugin",
+                "添加 marketplace 不等于已经安装 Plugin。",
+                "打开 `/plugins`",
+                "### Option 3 - Manual Copy",
                 "Windows PowerShell",
                 "macOS/Linux shell",
-                "安装后的目录结构",
                 "验证两个 Skill 都可见",
                 "同时安装两个 Skill。每个 thread 只使用一个角色。",
             ],

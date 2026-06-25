@@ -1,10 +1,10 @@
-﻿# Test Plan: Remote Agent Collaboration Lite
+# Test Plan: Remote Agent Collaboration Lite
 
 ## Project Understanding
 
 Remote Agent Collaboration Lite is a Markdown-only collaboration workflow for a small project lead and multiple contributors. It ships two Skills, `team-lead-collaboration` and `team-member-collaboration`, plus reusable templates and one tiny example.
 
-The pain point is coordination drift: scattered chat history, duplicate edits, unclear scope ownership, and agents guessing through conflicts. The project intentionally avoids infrastructure: no server, database, CLI, hooks, or hard permission model.
+The pain point is coordination drift: scattered chat history, duplicate edits, unclear scope ownership, and agents guessing through conflicts. The project intentionally avoids infrastructure: no server, database, custom collaboration CLI, hooks, or hard permission model.
 
 The implementation method is a document protocol:
 
@@ -32,6 +32,7 @@ Because there is no runtime code, tests focus on static protocol contracts and e
 | TP-010 | Completion policies | Verify Lead review, User review, Member self-completion, Per-task decision, and review loops are represented without fake Actor IDs. | `.collab/tasks` and `.collab/events` fixture tests. |
 | TP-011 | Install idempotency | Verify repeated copy installs remove stale files, avoid nested Skill dirs, preserve unrelated Skills, and keep Lead references. | Temporary install directory tests. |
 | TP-012 | CI | Verify GitHub Actions runs tests on push and pull_request for Ubuntu and Windows. | Workflow contract test. |
+| TP-013 | Plugin distribution | Verify one Codex Plugin bundles both Skills, the marketplace metadata is parseable, README uses plugin-first install, no hooks/custom collaboration CLI/server are reintroduced, and manual fallback paths use `.agents/skills`. | Plugin manifest, marketplace, install-report, archive, privacy, BOM, and docs contract tests. |
 
 ## Automated Test Command
 
@@ -50,7 +51,7 @@ py -m unittest discover -s tests -v
 ## Manual Review Checklist
 
 - Confirm README first screen still positions the repository as a lightweight Markdown Skill workflow.
-- Confirm neither Skill claims hard locking, permissions, hooks, a CLI, or a server.
+- Confirm neither Skill claims hard locking, permissions, hooks, a custom collaboration CLI, or a server.
 - Confirm Member behavior stops and asks on conflicting locks or unclear actor/scope.
 - Confirm Lead behavior asks before enabling optional task or module ownership modes.
 - Confirm Actor Registry uses stable actor IDs rather than task names.
@@ -58,6 +59,10 @@ py -m unittest discover -s tests -v
 - Confirm Remote Git Mode uses `.collab/locks`, `.collab/tasks`, `.collab/events`, and `.collab/snapshots` instead of requiring every agent to rewrite root aggregate files.
 - Confirm completion policy does not use `review target` as an Actor ID.
 - Confirm example files remain small enough for a new contributor to understand quickly.
+- Confirm README says "No server, no database, no hooks, and no custom collaboration CLI" instead of implying Codex itself has no CLI.
+- Confirm README separates Workspace Topology from Workflow Options and labels Remote Git Mode as Beta.
+- Confirm Codex/Claude compatibility is documented without turning the product into an environment-specific CLI workflow.
+- Confirm Plugin installation is first, `$skill-installer` is not claimed as verified, and manual copy remains a development/fallback path.
 
 ## Review Findings
 
@@ -75,14 +80,15 @@ Resolved in the current Lite protocol:
 - Default member completion in task mode is `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
 - Scope-overlap guidance now names common overlap cases: same path, same folder/module, broad module locks, and shared interfaces.
 - QA reject follow-up fixes are covered: the privacy scanner no longer treats diagnostic labels as Windows drive paths, public tests do not embed reconstructible private source terms, Actor Registry status semantics are defined, and multi-path scope canonicalization is canonical.
+- 0.5.0 Plugin distribution keeps Lite Markdown-only: one Plugin bundles the Lead and Member Skills, the Plugin has no hooks/MCP/custom CLI/service surface, README distinguishes marketplace add from Plugin install, and manual copy uses `.agents/skills`.
 
 ## Execution Log
 
-- Status: executed on the QA reject fix branch.
+- Status: executed on the Codex Plugin distribution branch.
 - Commands:
   - `python -m unittest discover -s tests -v`
   - `.venv\Scripts\python.exe -m pytest -q`
 - Result:
-  - `python -m unittest discover -s tests -v`: PASS, 49 tests.
-  - `.venv\Scripts\python.exe -m pytest -q`: PASS, 49 tests and 170 subtests.
-- Notes: Current suite covers actor identity, Actor Registry status semantics, scope canonicalization, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, link checks, CI workflow, and privacy scan.
+  - `python -m unittest discover -s tests -v`: PASS, 68 tests.
+  - `.venv\Scripts\python.exe -m pytest -q`: PASS, 68 tests and 484 subtests.
+- Notes: Current suite covers actor identity, Actor Registry status semantics, scope canonicalization, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, plugin packaging, repository marketplace metadata, archive contents, link checks, CI workflow, privacy scan, and BOM scan.

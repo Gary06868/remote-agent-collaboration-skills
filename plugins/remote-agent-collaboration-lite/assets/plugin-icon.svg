@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Remote Agent Collaboration Lite icon">
+  <rect width="256" height="256" rx="56" fill="#0F172A"/>
+  <circle cx="74" cy="83" r="28" fill="#60A5FA"/>
+  <circle cx="182" cy="83" r="28" fill="#34D399"/>
+  <path d="M101 84h54" stroke="#E2E8F0" stroke-width="12" stroke-linecap="round"/>
+  <rect x="61" y="128" width="134" height="72" rx="14" fill="#F8FAFC"/>
+  <path d="M82 151h92M82 174h58" stroke="#1E293B" stroke-width="10" stroke-linecap="round"/>
+  <path d="M82 116c12-16 28-24 46-24s34 8 46 24" fill="none" stroke="#93C5FD" stroke-width="10" stroke-linecap="round"/>
+  <path d="M111 213h34" stroke="#34D399" stroke-width="10" stroke-linecap="round"/>
+</svg>

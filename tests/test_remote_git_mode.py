@@ -412,8 +412,8 @@ class InstallIdempotencyTests(unittest.TestCase):
         required = [
             'Remove-Item -Recurse -Force (Join-Path $skills "team-lead-collaboration")',
             'Remove-Item -Recurse -Force (Join-Path $skills "team-member-collaboration")',
-            'rm -rf "$HOME/.codex/skills/team-lead-collaboration"',
-            'rm -rf "$HOME/.codex/skills/team-member-collaboration"',
+            'rm -rf "$HOME/.agents/skills/team-lead-collaboration"',
+            'rm -rf "$HOME/.agents/skills/team-member-collaboration"',
             "safe to run repeatedly",
         ]
         for value in required:

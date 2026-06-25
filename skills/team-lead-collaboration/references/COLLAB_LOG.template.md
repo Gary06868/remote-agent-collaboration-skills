@@ -1,4 +1,4 @@
-﻿# Collaboration Log
+# Collaboration Log
 
 > Read `AGENTS.md` before working.
 > Project timezone:

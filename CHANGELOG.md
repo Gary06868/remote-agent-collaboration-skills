@@ -1,4 +1,15 @@
-﻿# Changelog
+# Changelog
+
+## 0.5.0
+
+- Added Codex Plugin packaging for the Lite product.
+- Added repository marketplace distribution for `remote-agent-collaboration-lite`.
+- One Plugin now installs both Lead and Member Skills while keeping them independently visible.
+- Added Plugin-first installation docs and an AI Agent verification section.
+- Recorded the current Codex Plugin and Skills audit in `docs/CODEX_PLUGIN_DISTRIBUTION_AUDIT.md`.
+- Corrected manual Skill installation paths to the current `.agents/skills` locations.
+- Added plugin manifest, marketplace, install-report, idempotency, archive, privacy, and BOM tests.
+- No hooks, custom collaboration CLI, server, database, session lock, doctor flow, or runtime permission system were added.
 
 ## 0.4.0
 

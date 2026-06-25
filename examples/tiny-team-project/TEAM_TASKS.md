@@ -1,4 +1,4 @@
-﻿# Team Tasks
+# Team Tasks
 
 Task Assignment Mode is enabled for this tiny example.
 
