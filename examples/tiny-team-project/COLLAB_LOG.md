@@ -96,7 +96,9 @@ Current locks:
 - Conflict example: 2026-06-24T10:18:00-07:00 - alex-codex-member-test-02 detected overlap with morgan-claude-member-content-01 on `README.md`, recognized that writing with overlapping writing is a conflict, and stopped before editing business files.
 - Handoff ID: H-001
   From Actor: alex-codex-lead-coordinator-01
-  To Actor: morgan-claude-member-content-01
+  Target Type: actor
+  Target Actor ID: morgan-claude-member-content-01
+  Target Human:
   Task: TASK-001
   Scope: README.md
   Required Next Action: Draft the landing-page intro.

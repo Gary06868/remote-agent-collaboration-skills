@@ -43,7 +43,7 @@ def git(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProces
     )
     if check and result.returncode != 0:
         raise AssertionError(
-            f"git {' '.join(args)} failed in {cwd}\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+            f"git {' '.join(args)} failed in {cwd}\nstdout follows\n{result.stdout}\nstderr follows\n{result.stderr}"
         )
     return result
 
@@ -76,10 +76,31 @@ def lock_text(actor: str, scope: str, state: str = "acquired") -> str:
 """
 
 
-def scope_overlaps(left: str, right: str) -> bool:
-    left = left.strip().rstrip("/")
-    right = right.strip().rstrip("/")
+def canonical_scope_paths(scope: str) -> list[str]:
+    paths: list[str] = []
+    for raw_path in scope.split(";"):
+        path = raw_path.strip().replace("\\", "/")
+        while path.startswith("./"):
+            path = path[2:]
+        while "//" in path:
+            path = path.replace("//", "/")
+        if path != "/":
+            path = path.rstrip("/")
+        if path:
+            paths.append(path)
+    return paths
+
+
+def scope_path_overlaps(left: str, right: str) -> bool:
     return left == right or left.startswith(f"{right}/") or right.startswith(f"{left}/")
+
+
+def scope_overlaps(left: str, right: str) -> bool:
+    return any(
+        scope_path_overlaps(left_path, right_path)
+        for left_path in canonical_scope_paths(left)
+        for right_path in canonical_scope_paths(right)
+    )
 
 
 def parse_scope(lock_file: Path) -> str:
@@ -230,6 +251,14 @@ class RemoteGitModeBehaviorTests(unittest.TestCase):
         # documented recovery is a state transition by the same actor or Lead.
         self.assertIn("paused", text)
         self.assertTrue((self.clone_b / ".collab" / "locks" / "alex-codex-member-content-01.md").exists())
+
+
+class ScopeCanonicalizationBehaviorTests(unittest.TestCase):
+    def test_scope_overlap_supports_canonical_semicolon_multi_path(self) -> None:
+        self.assertTrue(scope_overlaps("src/vision/camera.py; configs/camera.yaml", "configs/camera.yaml"))
+        self.assertTrue(scope_overlaps("./src//vision/", "src/vision/camera.py"))
+        self.assertTrue(scope_overlaps("src/vision", "src/vision/camera.py; docs/vision.md"))
+        self.assertFalse(scope_overlaps("src/a.py", "src/ab.py"))
 
 
 class RemoteGitModeDocumentationTests(unittest.TestCase):

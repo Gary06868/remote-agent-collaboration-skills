@@ -250,6 +250,16 @@ display_name: Gary's Codex #01 (Member - Frontend Developer)
 - 不要用任务名称当 actor identity。
 - 在 `AGENTS.md`、`COLLAB_LOG.md`、`TEAM_TASKS.md` 和 `MODULE_OWNERSHIP.md` 中保持 `actor_id` 一致。
 
+## Actor Status Semantics
+
+- `active`: the actor may accept work and acquire, refresh, pause, resume, and release locks.
+- `paused`: the actor is temporarily unavailable for new scope. Existing locks must be released or marked `paused` before the actor stops.
+- `retired`: the actor no longer accepts new work and must not hold an active lock. Keep historical records intact.
+- Allowed transitions: active -> paused -> active, active -> retired, paused -> retired.
+- A Member may update only its own Actor Registry entry.
+- `Last seen` updates when the actor starts work, acquires a lock, refreshes a lock, pauses, resumes, releases, changes task status, creates a handoff, or responds to a handoff.
+- `Current scope` updates when the actor acquires, pauses, resumes, or releases a lock, or when assigned task scope changes.
+
 ## 快速开始
 
 1. 安装两个 Skill。
@@ -294,6 +304,19 @@ display_name: Gary's Codex #01 (Member - Frontend Developer)
 ```
 
 Scope 使用仓库相对路径。优先写具体文件或目录。不要记录本机绝对路径。
+
+## Scope Canonicalization
+
+- Use repository-relative paths only.
+- Use `/` as the separator.
+- Remove a leading `./`.
+- Collapse repeated `/` characters.
+- Remove trailing `/` except for repository root.
+- Separate multiple paths with `;`.
+- Trim whitespace around each path.
+- Reject absolute paths.
+- Reject `..` path segments.
+- Scopes overlap when any canonical path is equal, parent/child, or shares a declared module/interface boundary.
 
 冲突语义：
 

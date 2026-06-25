@@ -6,6 +6,7 @@ continue to describe one coherent Lite Lead/Member workflow.
 """
 
 from pathlib import Path
+import os
 import re
 import shutil
 import subprocess
@@ -56,6 +57,13 @@ LOCK_FIELDS = [
     "Last Updated:",
     "Expected Finish:",
     "Notes:",
+]
+
+WINDOWS_ABSOLUTE_PATH_PATTERN = r"(?<![A-Za-z0-9_])[A-Za-z]:[\\/]+[^\s\"'`<>|*?]+"
+SECRET_PATTERNS = [
+    WINDOWS_ABSOLUTE_PATH_PATTERN,
+    r"sk-proj-[A-Za-z0-9_-]+",
+    r"sk-[A-Za-z0-9]{20,}",
 ]
 
 HANDOFF_FIELDS = [
@@ -302,6 +310,39 @@ class SkillContractTests(unittest.TestCase):
             "double-check Active Work Locks after writing your own lock",
         ]
         for path in [README, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                assert_contains_all(self, read(path), required)
+
+    def test_actor_status_semantics_are_consistent(self) -> None:
+        required = [
+            "## Actor Status Semantics",
+            "`active`: the actor may accept work and acquire, refresh, pause, resume, and release locks.",
+            "`paused`: the actor is temporarily unavailable for new scope.",
+            "`retired`: the actor no longer accepts new work and must not hold an active lock.",
+            "Allowed transitions: active -> paused -> active, active -> retired, paused -> retired.",
+            "A Member may update only its own Actor Registry entry.",
+            "`Last seen` updates when the actor starts work, acquires a lock, refreshes a lock, pauses, resumes, releases, changes task status, creates a handoff, or responds to a handoff.",
+            "`Current scope` updates when the actor acquires, pauses, resumes, or releases a lock, or when assigned task scope changes.",
+        ]
+        for path in [README, README_ZH, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                assert_contains_all(self, read(path), required)
+
+    def test_scope_canonicalization_rules_are_consistent(self) -> None:
+        required = [
+            "## Scope Canonicalization",
+            "Use repository-relative paths only.",
+            "Use `/` as the separator.",
+            "Remove a leading `./`.",
+            "Collapse repeated `/` characters.",
+            "Remove trailing `/` except for repository root.",
+            "Separate multiple paths with `;`.",
+            "Trim whitespace around each path.",
+            "Reject absolute paths.",
+            "Reject `..` path segments.",
+            "Scopes overlap when any canonical path is equal, parent/child, or shares a declared module/interface boundary.",
+        ]
+        for path in [README, README_ZH, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
                 assert_contains_all(self, read(path), required)
 
@@ -599,8 +640,35 @@ class ExampleConsistencyTests(unittest.TestCase):
             history,
             [
                 "Handoff ID: H-001",
+                "Target Type: actor",
+                "Target Actor ID: morgan-claude-member-content-01",
                 "Status: resolved",
                 "Morgan accepted and completed TASK-001.",
+            ],
+        )
+        self.assertNotIn("To Actor:", history)
+
+    def test_open_handoffs_show_unresolved_items_and_history_archives_resolved_items(self) -> None:
+        log = read(EXAMPLE / "COLLAB_LOG.md")
+        open_handoffs = section(log, "## Open Handoffs")
+        history = section(log, "## History / Archived Notes")
+
+        self.assertIn("Status: open", open_handoffs)
+        self.assertNotIn("Status: resolved", open_handoffs)
+        self.assertNotIn("Status: cancelled", open_handoffs)
+        self.assertIn("Status: resolved", history)
+        self.assertIn("Handoff ID: H-001", history)
+
+        events = "\n".join(read(path) for path in (EXAMPLE / ".collab" / "events").glob("*.md"))
+        assert_contains_all(
+            self,
+            events,
+            [
+                "Type: review handoff",
+                "Type: user review handoff",
+                "Type: self completion",
+                "Type: review loop",
+                "Result: Task completed under Member self-completion with no review handoff.",
             ],
         )
 
@@ -717,15 +785,12 @@ class MarkdownLinkAndPrivacyTests(unittest.TestCase):
                     self.assertTrue(resolved.exists(), f"Missing local link target: {target}")
 
     def test_public_files_do_not_leak_local_paths_or_private_source_terms(self) -> None:
-        patterns = [
-            r"[A-Za-z]:\\",
-            "MetaAgent" + "_devel",
-            "meta_agent" + "_platform",
-            "b9877" + "e3c",
-            "359914" + "ac",
-            "Lead" + "-Setup",
-            "Member" + "-Content-01",
+        private_patterns = [
+            pattern
+            for pattern in os.environ.get("RACL_PRIVATE_SCAN_PATTERNS", "").splitlines()
+            if pattern.strip()
         ]
+        patterns = SECRET_PATTERNS + private_patterns
         tracked = subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines()
         for relative_path in tracked:
             path = ROOT / relative_path
@@ -737,6 +802,14 @@ class MarkdownLinkAndPrivacyTests(unittest.TestCase):
             for pattern in patterns:
                 with self.subTest(path=path.relative_to(ROOT).as_posix(), pattern=pattern):
                     self.assertIsNone(re.search(pattern, text), f"Found private pattern {pattern}")
+
+    def test_windows_absolute_path_pattern_ignores_diagnostic_labels(self) -> None:
+        windows_path = "C:" + "\\" + "Users" + "\\" + "Example" + "\\" + "repo"
+        drive_slash_path = "D:" + "/workspace/repo"
+
+        self.assertIsNone(re.search(WINDOWS_ABSOLUTE_PATH_PATTERN, "STDOUT:\\nSTDERR:\\n"))
+        self.assertIsNotNone(re.search(WINDOWS_ABSOLUTE_PATH_PATTERN, f"path {windows_path}"))
+        self.assertIsNotNone(re.search(WINDOWS_ABSOLUTE_PATH_PATTERN, f"path {drive_slash_path}"))
 
     def test_version_is_updated_for_identity_protocol(self) -> None:
         assert_contains_all(

@@ -74,10 +74,15 @@ Resolved in the current Lite protocol:
 - Stale-lock handling is strict: mark or report stale status, but do not remove another actor's lock without user confirmation.
 - Default member completion in task mode is `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
 - Scope-overlap guidance now names common overlap cases: same path, same folder/module, broad module locks, and shared interfaces.
+- QA reject follow-up fixes are covered: the privacy scanner no longer treats diagnostic labels as Windows drive paths, public tests do not embed reconstructible private source terms, Actor Registry status semantics are defined, and multi-path scope canonicalization is canonical.
 
 ## Execution Log
 
-- Status: executed.
-- Last command: `python -m unittest discover -s tests -v`
-- Result: PASS, 44 tests.
-- Notes: Current suite covers actor identity, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, link checks, CI workflow, and privacy scan.
+- Status: executed on the QA reject fix branch.
+- Commands:
+  - `python -m unittest discover -s tests -v`
+  - `.venv\Scripts\python.exe -m pytest -q`
+- Result:
+  - `python -m unittest discover -s tests -v`: PASS, 49 tests.
+  - `.venv\Scripts\python.exe -m pytest -q`: PASS, 49 tests and 170 subtests.
+- Notes: Current suite covers actor identity, Actor Registry status semantics, scope canonicalization, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, link checks, CI workflow, and privacy scan.
