@@ -107,6 +107,15 @@ codex plugin marketplace remove remote-agent-collaboration-lite
 
 Codex accepted the marketplace name `remote-agent-collaboration-lite` and resolved the installed marketplace root to `<PROJECT_ROOT>`.
 
+After the development branch was pushed, marketplace add/remove was also verified against the GitHub repository branch:
+
+```powershell
+codex plugin marketplace add Gary06868/remote-agent-collaboration-skills --ref feature/codex-plugin-distribution
+codex plugin marketplace remove remote-agent-collaboration-lite
+```
+
+The first remote add attempt hit a transient GitHub HTTPS connection timeout. `git ls-remote` confirmed the pushed branch was visible on GitHub, and the next `codex plugin marketplace add` attempt succeeded.
+
 ## Unverified Capabilities
 
 - Non-interactive Plugin install: not supported by local CLI.

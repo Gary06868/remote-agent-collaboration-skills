@@ -12,10 +12,17 @@ This report is sanitized. It does not include tokens, private local paths, tempo
 
 ## Automated Checks
 
-Marketplace add command under review:
+Post-merge marketplace add command documented for users:
 
 ```powershell
 codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
+```
+
+Remote branch marketplace command actually run after branch push:
+
+```powershell
+codex plugin marketplace add Gary06868/remote-agent-collaboration-skills --ref feature/codex-plugin-distribution
+codex plugin marketplace remove remote-agent-collaboration-lite
 ```
 
 Automated local marketplace command actually run:
@@ -25,7 +32,7 @@ codex plugin marketplace add <PROJECT_ROOT>
 codex plugin marketplace remove remote-agent-collaboration-lite
 ```
 
-Result: Codex accepted marketplace `remote-agent-collaboration-lite` from `<PROJECT_ROOT>` and it was removed after validation.
+Result: Codex accepted marketplace `remote-agent-collaboration-lite` from `<PROJECT_ROOT>`, accepted the pushed GitHub branch marketplace, and each installed marketplace entry was removed after validation. The first remote attempt hit a transient GitHub HTTPS connection timeout; a retry succeeded after `git ls-remote` confirmed the branch commit.
 
 Local CLI capability checks:
 
