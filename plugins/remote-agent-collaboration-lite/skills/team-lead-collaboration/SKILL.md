@@ -421,8 +421,11 @@ After major operations, verify:
 - No old handoff asks a Member to redo an already completed task.
 - Recent Decisions match the current mode.
 - actor_id is consistent across AGENTS.md, COLLAB_LOG.md, TEAM_TASKS.md, and MODULE_OWNERSHIP.md.
+- Actor Registry `Last seen` and `Current scope` are not behind Latest Updates, task events, lock events, or handoff events.
 - Timestamps use the project timezone and UTC offset.
 - Files do not contradict each other.
+- If a Latest Updates entry or task event is newer than an actor's `Last seen`, treat the Actor Registry entry as stale and reconcile it before review sign-off.
+- If an actor's `Current scope` contradicts the latest task, lock, or completion event, update the registry or record a reconciliation handoff.
 
 When a Member completes assigned work and marks it `READY_FOR_REVIEW`:
 

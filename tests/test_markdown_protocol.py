@@ -370,6 +370,28 @@ class SkillContractTests(unittest.TestCase):
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
                 assert_contains_all(self, read(path), required)
 
+    def test_member_completion_updates_own_actor_registry_last_seen(self) -> None:
+        text = read(MEMBER_SKILL)
+        assert_contains_all(
+            self,
+            text,
+            [
+                "Before reporting completion, update your own Actor Registry `Last seen` to the completion or Latest Updates timestamp.",
+                "Update your own Actor Registry `Current scope` so it matches the completed, paused, or remaining active scope.",
+            ],
+        )
+
+    def test_lead_final_reconciliation_checks_actor_registry_freshness(self) -> None:
+        text = read(LEAD_SKILL)
+        assert_contains_all(
+            self,
+            text,
+            [
+                "Actor Registry `Last seen` and `Current scope` are not behind Latest Updates, task events, lock events, or handoff events.",
+                "If a Latest Updates entry or task event is newer than an actor's `Last seen`, treat the Actor Registry entry as stale and reconcile it before review sign-off.",
+            ],
+        )
+
 
 class TemplateContractTests(unittest.TestCase):
     def test_agents_template_has_actor_registry_and_operational_sections(self) -> None:

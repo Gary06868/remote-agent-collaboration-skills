@@ -304,6 +304,8 @@ When you finish, pause, or hit a blocker:
 3. Mention changed files, result, tests or checks run, and blockers.
 4. If task mode is enabled, update your task status.
 5. Update Current Snapshot and Open Handoffs if your work changed the real state.
+6. Before reporting completion, update your own Actor Registry `Last seen` to the completion or Latest Updates timestamp.
+7. Update your own Actor Registry `Current scope` so it matches the completed, paused, or remaining active scope.
 
 Major updates use:
 
@@ -350,6 +352,7 @@ When you complete assigned work and mark it `READY_FOR_REVIEW`:
 - Move any Lead to Member handoff for the completed task to History / Archived Notes.
 - Record the completion in Latest Updates.
 - Ensure `TEAM_TASKS.md` status is `READY_FOR_REVIEW`.
+- Ensure your own Actor Registry `Last seen` and `Current scope` match the completion update and task state.
 
 Completion Policy rules:
 
