@@ -255,6 +255,28 @@ class SkillContractTests(unittest.TestCase):
             ],
         )
 
+    def test_lead_initialization_collects_team_division_model_and_outputs_member_prompts(self) -> None:
+        text = read(LEAD_SKILL)
+        assert_contains_all(
+            self,
+            text,
+            [
+                "## Required Question: Collaboration Team Model",
+                "Do you already have an existing collaboration team model?",
+                "How many humans are participating?",
+                "For each human, how many AI subagents or AI threads do they operate?",
+                "What is each human or AI subagent responsible for?",
+                "If the user already has a model, ask follow-up questions until the human owners, AI subagents, roles, scopes, and reporting relationships are clear.",
+                "If the user does not have a model, ask whether they want you to propose a recommended collaboration model.",
+                "Do not generate a recommended model until the user asks for one.",
+                "After the collaboration team model is understood or proposed, generate one initialization prompt for each Member in the conversation.",
+                "$team-member-collaboration",
+                "read `AGENTS.md`, `COLLAB_LOG.md`, optional `TEAM_TASKS.md`, and optional `MODULE_OWNERSHIP.md`",
+                "understand the project and collaboration mechanism",
+                "complete Member initialization",
+            ],
+        )
+
     def test_member_startup_handles_optional_and_missing_files(self) -> None:
         text = read(MEMBER_SKILL)
         assert_contains_all(

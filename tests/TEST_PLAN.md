@@ -89,6 +89,6 @@ Resolved in the current Lite protocol:
   - `python -m unittest discover -s tests -v`
   - `.venv\Scripts\python.exe -m pytest -q`
 - Result:
-  - `python -m unittest discover -s tests -v`: PASS, 70 tests.
-  - `.venv\Scripts\python.exe -m pytest -q`: PASS, 70 tests and 484 subtests.
+  - `python -m unittest discover -s tests -v`: PASS, 71 tests.
+  - `.venv\Scripts\python.exe -m pytest -q`: PASS, 71 tests and 484 subtests.
 - Notes: Current suite covers actor identity, Actor Registry status semantics, scope canonicalization, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, plugin packaging, repository marketplace metadata, archive contents, link checks, CI workflow, privacy scan, and BOM scan.

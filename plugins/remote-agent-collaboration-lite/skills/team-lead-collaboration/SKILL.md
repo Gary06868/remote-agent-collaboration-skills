@@ -133,6 +133,36 @@ Register the Lead in `AGENTS.md` under Actor Registry. Lead may also register an
 - `Last seen` updates when the actor starts work, acquires a lock, refreshes a lock, pauses, resumes, releases, changes task status, creates a handoff, or responds to a handoff.
 - `Current scope` updates when the actor acquires, pauses, resumes, or releases a lock, or when assigned task scope changes.
 
+## Required Question: Collaboration Team Model
+
+During initialization, ask:
+
+```text
+Do you already have an existing collaboration team model?
+```
+
+If yes, ask:
+
+- How many humans are participating?
+- For each human, how many AI subagents or AI threads do they operate?
+- What is each human or AI subagent responsible for?
+- Which Member actors should exist, and what functional role, scope, and reporting relationship should each one use?
+
+If the user already has a model, ask follow-up questions until the human owners, AI subagents, roles, scopes, and reporting relationships are clear.
+
+If the user does not have a model, ask whether they want you to propose a recommended collaboration model. Do not generate a recommended model until the user asks for one.
+
+After the collaboration team model is understood or proposed, generate one initialization prompt for each Member in the conversation. Each prompt must tell that Member to:
+
+- explicitly start with `$team-member-collaboration`;
+- read `AGENTS.md`, `COLLAB_LOG.md`, optional `TEAM_TASKS.md`, and optional `MODULE_OWNERSHIP.md`;
+- understand the project and collaboration mechanism;
+- confirm or create their actor identity using the agreed human owner, functional role, instance, and scope;
+- check Active Work Locks before editing;
+- complete Member initialization and report Actor ID, assigned scope, and readiness.
+
+Record the agreed model in `AGENTS.md` Actor Registry and, when task or module modes are enabled, align `TEAM_TASKS.md` and `MODULE_OWNERSHIP.md` with that model.
+
 ## Empty Project
 
 Treat the folder as empty when there is no obvious project structure such as README, source, docs, app, config, package, tests, or scripts, or when the user says it is a new project.
