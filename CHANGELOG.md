@@ -9,6 +9,7 @@
 - Recorded the current Codex Plugin and Skills audit in `docs/CODEX_PLUGIN_DISTRIBUTION_AUDIT.md`.
 - Corrected manual Skill installation paths to the current `.agents/skills` locations.
 - Added plugin manifest, marketplace, install-report, idempotency, archive, privacy, and BOM tests.
+- Added a Skill language policy so replies follow the user's prompt language and documents can use a separately requested language.
 - No hooks, custom collaboration CLI, server, database, session lock, doctor flow, or runtime permission system were added.
 
 ## 0.4.0

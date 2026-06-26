@@ -17,6 +17,15 @@ Do not use this Skill implicitly. Do not claim hard permission enforcement, role
 
 Do not use this Skill when the user wants you to act only as a task executor, module worker, or ordinary contributor. In that case, use the Member Skill instead.
 
+## Language Policy
+
+- Default conversational replies to the language of the user's current prompt.
+- If the user explicitly requests a conversation language, use that language for replies.
+- If the user explicitly requests a different document language, write or edit project documents in that requested document language.
+- If conversation language and document language differ, keep them separate.
+- Do not let the English wording of this Skill force English output.
+- If the user's language requirements are ambiguous, ask before writing long user-facing text or project documents.
+
 ## Purpose
 
 Help one project owner, maintainer, or coordination thread organize multiple human or AI contributors in one repository.
@@ -157,6 +166,7 @@ After the collaboration team model is understood or proposed, generate one initi
 - explicitly start with `$team-member-collaboration`;
 - read `AGENTS.md`, `COLLAB_LOG.md`, optional `TEAM_TASKS.md`, and optional `MODULE_OWNERSHIP.md`;
 - understand the project and collaboration mechanism;
+- preserve the user's conversation and document language requirements;
 - confirm or create their actor identity using the agreed human owner, functional role, instance, and scope;
 - check Active Work Locks before editing;
 - complete Member initialization and report Actor ID, assigned scope, and readiness.

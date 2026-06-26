@@ -215,6 +215,20 @@ class SkillContractTests(unittest.TestCase):
             ],
         )
 
+    def test_skills_follow_user_requested_conversation_and_document_languages(self) -> None:
+        required = [
+            "## Language Policy",
+            "Default conversational replies to the language of the user's current prompt.",
+            "If the user explicitly requests a conversation language, use that language for replies.",
+            "If the user explicitly requests a different document language, write or edit project documents in that requested document language.",
+            "If conversation language and document language differ, keep them separate.",
+            "Do not let the English wording of this Skill force English output.",
+            "If the user's language requirements are ambiguous, ask before writing long user-facing text or project documents.",
+        ]
+        for path in [LEAD_SKILL, MEMBER_SKILL]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                assert_contains_all(self, read(path), required)
+
     def test_lead_and_member_define_complete_identity_bootstrap(self) -> None:
         lead = read(LEAD_SKILL)
         member = read(MEMBER_SKILL)
@@ -273,6 +287,7 @@ class SkillContractTests(unittest.TestCase):
                 "$team-member-collaboration",
                 "read `AGENTS.md`, `COLLAB_LOG.md`, optional `TEAM_TASKS.md`, and optional `MODULE_OWNERSHIP.md`",
                 "understand the project and collaboration mechanism",
+                "preserve the user's conversation and document language requirements",
                 "complete Member initialization",
             ],
         )

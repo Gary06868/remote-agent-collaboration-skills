@@ -17,6 +17,15 @@ Do not use this Skill implicitly. Do not claim hard permission enforcement, role
 
 Do not use this Skill when the user asks you to initialize collaboration rules, coordinate multiple contributors, assign work to others, or resolve project-wide process decisions. Those are Lead responsibilities.
 
+## Language Policy
+
+- Default conversational replies to the language of the user's current prompt.
+- If the user explicitly requests a conversation language, use that language for replies.
+- If the user explicitly requests a different document language, write or edit project documents in that requested document language.
+- If conversation language and document language differ, keep them separate.
+- Do not let the English wording of this Skill force English output.
+- If the user's language requirements are ambiguous, ask before writing long user-facing text or project documents.
+
 ## Purpose
 
 Help a contributor, implementer, module developer, AI worker, or another AI coding thread do assigned work without conflicting with other contributors.
