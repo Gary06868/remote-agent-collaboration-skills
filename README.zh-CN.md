@@ -277,4 +277,5 @@ Advanced local protocol experiments are preserved on the `standard-local-protoco
 - [协议参考](docs/PROTOCOL_REFERENCE.md)
 - [Remote Git Mode](docs/REMOTE_GIT_MODE.md)
 - [Codex Plugin Distribution Audit](docs/CODEX_PLUGIN_DISTRIBUTION_AUDIT.md)
+- [Promotion Kit](docs/PROMOTION_KIT.md)
 - [English README](README.md)
