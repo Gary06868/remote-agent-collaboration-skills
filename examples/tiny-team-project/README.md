@@ -19,7 +19,7 @@ What the example demonstrates:
 - A Member adds a writing lock for `README.md`.
 - A second Member detects the overlapping lock and stops before editing business files.
 - The first Member finishes TASK-001, removes the lock, and marks the task READY_FOR_REVIEW.
-- Current Snapshot says the next action is Lead or user review.
+- Current Snapshot names the concrete review target.
 - Open Handoffs contains only the unresolved review handoff.
 - The old Lead-to-Member assignment handoff is archived as resolved.
 

@@ -1,0 +1,20 @@
+{
+  "name": "remote-agent-collaboration-lite",
+  "interface": {
+    "displayName": "Remote Agent Collaboration Lite"
+  },
+  "plugins": [
+    {
+      "name": "remote-agent-collaboration-lite",
+      "source": {
+        "source": "local",
+        "path": "./plugins/remote-agent-collaboration-lite"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

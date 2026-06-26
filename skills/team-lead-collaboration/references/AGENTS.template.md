@@ -17,6 +17,13 @@ Optional modes:
 - Task Assignment Mode: disabled by default. Enable only when the user wants `TEAM_TASKS.md`.
 - Module Ownership Mode: disabled by default. Enable only when the user wants `MODULE_OWNERSHIP.md`.
 
+Workspace modes:
+
+- Shared Workspace Mode: multiple agents use the same working directory.
+- Remote Git Mode: different machines, clones, or worktrees coordinate through a Git remote.
+
+Do not mix assumptions between these modes. Shared Workspace Mode relies on the same working directory and local Markdown state. Remote Git Mode must assume another participant may push from a different clone between any two local commands.
+
 ## Project Time
 
 - Project timezone:
@@ -81,6 +88,16 @@ Actor IDs must be unique. The same actor must use the same `actor_id` across `AG
 - Registered at:
 - Last seen:
 
+## Actor Status Semantics
+
+- `active`: the actor may accept work and acquire, refresh, pause, resume, and release locks.
+- `paused`: the actor is temporarily unavailable for new scope. Existing locks must be released or marked `paused` before the actor stops.
+- `retired`: the actor no longer accepts new work and must not hold an active lock. Keep historical records intact.
+- Allowed transitions: active -> paused -> active, active -> retired, paused -> retired.
+- A Member may update only its own Actor Registry entry.
+- `Last seen` updates when the actor starts work, acquires a lock, refreshes a lock, pauses, resumes, releases, changes task status, creates a handoff, or responds to a handoff.
+- `Current scope` updates when the actor acquires, pauses, resumes, or releases a lock, or when assigned task scope changes.
+
 ## Completion Policy
 
 Who may mark tasks DONE:
@@ -114,6 +131,18 @@ Soft locks are coordination notes, not security locks.
 
 Quick reads of `AGENTS.md`, `COLLAB_LOG.md`, and task files do not need a lock. Larger research or analysis may use a `reading` lock.
 
+Shared Workspace Mode uses root Markdown state and a local double-check: read locks, write your lock, then double-check Active Work Locks after writing your own lock before editing business files.
+
+Remote Git Mode uses low-conflict Markdown state:
+
+| Path | Type | Rule |
+| --- | --- | --- |
+| `.collab/locks/<actor-id>.md` | authoritative state | One actor owns one lock file. |
+| `.collab/tasks/<task-id>.md` | authoritative state | One task owns one task file. |
+| `.collab/events/<timestamp>-<actor-id>.md` | append-only event | One event per file. |
+| `.collab/snapshots/COLLAB_LOG.md` | derived snapshot | Lead may rebuild it from locks, tasks, and events. |
+| `COLLAB_LOG.md` | derived snapshot | Lead may rebuild it as a human-readable aggregate. |
+
 Conflict semantics:
 
 - reading with reading does not conflict by default.
@@ -127,11 +156,24 @@ Conflict semantics:
 
 Scope rules:
 
-- Use repository-relative paths.
+- Use repository-relative paths only.
 - Prefer concrete files or directories.
 - Do not record local absolute paths.
 - Avoid broad scopes such as `project` or `frontend` unless the project is that small.
 - Multiple paths are allowed.
+
+## Scope Canonicalization
+
+- Use repository-relative paths only.
+- Use `/` as the separator.
+- Remove a leading `./`.
+- Collapse repeated `/` characters.
+- Remove trailing `/` except for repository root.
+- Separate multiple paths with `;`.
+- Trim whitespace around each path.
+- Reject absolute paths.
+- Reject `..` path segments.
+- Scopes overlap when any canonical path is equal, parent/child, or shares a declared module/interface boundary.
 
 Before larger read/write work:
 
@@ -157,6 +199,31 @@ Suggested lock format:
   Expected Finish:
   Notes:
 ```
+
+## Remote Git Mode Lock Protocol
+
+Before modifying business files in Remote Git Mode:
+
+1. fetch the latest remote state.
+2. Re-read `.collab/locks/*.md` and `.collab/tasks/*.md`.
+3. Check existing locks for scope overlap.
+4. create a candidate lock record in `.collab/locks/<actor-id>.md`.
+5. commit only the candidate lock.
+6. push the candidate lock to the collaboration branch.
+7. If push reports non-fast-forward, fetch, rebase or reapply the candidate lock, re-read all locks, and re-evaluate scope overlap.
+8. Do not blindly repeat push.
+9. Do not force push.
+10. Only edit business files after the candidate lock is published and rechecked on the latest remote state.
+
+Lock lifecycle:
+
+- acquire: publish a candidate lock, re-check latest remote state, then continue.
+- refresh: update `Last Updated` before continuing long work.
+- pause: keep the scope reserved while temporarily stopped.
+- resume: the same actor returns and refreshes the lock before editing.
+- release: remove or mark the actor's lock released after work and reconciliation.
+- stale: older than the stale threshold; Members report but do not delete another actor's stale lock.
+- abandoned: Lead or explicit user decision marks a stale/crashed lock abandoned so others can proceed.
 
 ## Git Rules
 
@@ -246,6 +313,14 @@ When done:
 3. Update your task in `TEAM_TASKS.md` if task mode is enabled.
 4. Move resolved or cancelled handoffs to History / Archived Notes.
 5. Run Final Reconciliation against `AGENTS.md`, `COLLAB_LOG.md`, and task files.
+
+Completion Policy rules:
+
+- Lead review: Member finishes as `READY_FOR_REVIEW`; handoff target type is `actor`; target actor is the concrete Lead `actor_id`.
+- User review: Member finishes as `READY_FOR_REVIEW`; handoff target type is `human-user`; do not invent an Actor ID for the user.
+- Member self-completion: Member marks the task `DONE` when acceptance notes are met; do not create a review handoff.
+- Per-task decision: each task must record the selected completion policy. If it is missing, stop and ask.
+- Review loops are explicit: `CHANGES_REQUESTED -> IN_PROGRESS -> READY_FOR_REVIEW` for review policies, or `CHANGES_REQUESTED -> IN_PROGRESS -> DONE` for Member self-completion.
 
 ## Final Reconciliation
 

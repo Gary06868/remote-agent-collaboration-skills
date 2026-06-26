@@ -8,7 +8,7 @@ Task Assignment Mode is enabled for this tiny example.
 - `ASSIGNED`: assigned but not started.
 - `IN_PROGRESS`: actively being worked.
 - `BLOCKED`: waiting on a decision or dependency.
-- `READY_FOR_REVIEW`: ready for Lead or user review.
+- `READY_FOR_REVIEW`: ready for target reviewer review.
 - `CHANGES_REQUESTED`: needs follow-up changes.
 - `DONE`: complete.
 
@@ -21,10 +21,15 @@ Task Assignment Mode is enabled for this tiny example.
 - Owner Display: Morgan's Claude #01 (Member - Content Developer)
 - Scope: README.md
 - Goal: Improve intro copy.
+- Completion Policy: Lead review
+- Selected Completion Policy: Lead review
+- Handoff Target Type: actor
+- Handoff Target Actor ID: alex-codex-lead-coordinator-01
+- Handoff Target Human:
 - Acceptance Notes: Intro explains who the project is for and what it does.
 - Blockers: None.
 - Last Updated: 2026-06-24T10:32:00-07:00
-- Next Action: Lead or user reviews TASK-001.
+- Next Action: alex-codex-lead-coordinator-01 reviews TASK-001.
 
 ## TASK-002
 
@@ -33,10 +38,15 @@ Task Assignment Mode is enabled for this tiny example.
 - Owner Display: Alex's Codex #02 (Member - Test Engineer)
 - Scope: README.md
 - Goal: Review intro clarity after TASK-001 is accepted.
+- Completion Policy: Lead review
+- Selected Completion Policy: Lead review
+- Handoff Target Type: actor
+- Handoff Target Actor ID: alex-codex-lead-coordinator-01
+- Handoff Target Human:
 - Acceptance Notes: Second pass does not start while another actor owns overlapping writing scope.
 - Blockers: Waiting for TASK-001 review.
 - Last Updated: 2026-06-24T10:18:00-07:00
-- Next Action: Wait for Lead or user decision after TASK-001 review.
+- Next Action: Wait for review target decision after TASK-001 review.
 
 ## Backlog
 

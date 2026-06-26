@@ -47,9 +47,9 @@ Do not use task names as actor identities. Keep actor IDs stable across collabor
 - Functional role: Project Coordinator
 - Instance: 01
 - Status: active
-- Current scope: collaboration setup and review
+- Current scope: TASK-LEAD-REVIEW.md review queue
 - Registered at: 2026-06-24T10:00:00-07:00
-- Last seen: 2026-06-24T10:45:00-07:00
+- Last seen: 2026-06-24T11:45:00+00:00
 
 ### morgan-claude-member-content-01
 
@@ -60,9 +60,9 @@ Do not use task names as actor identities. Keep actor IDs stable across collabor
 - Functional role: Content Developer
 - Instance: 01
 - Status: active
-- Current scope: README.md
+- Current scope: TASK-LEAD-REVIEW.md, TASK-REVIEW-LOOP.md
 - Registered at: 2026-06-24T10:05:00-07:00
-- Last seen: 2026-06-24T10:32:00-07:00
+- Last seen: 2026-06-24T11:40:00+00:00
 
 ### alex-codex-member-test-02
 
@@ -75,13 +75,13 @@ Do not use task names as actor identities. Keep actor IDs stable across collabor
 - Status: active
 - Current scope: README.md review attempt
 - Registered at: 2026-06-24T10:10:00-07:00
-- Last seen: 2026-06-24T10:18:00-07:00
+- Last seen: 2026-06-24T10:18:00+00:00
 
 ## Completion Policy
 
 Who may mark tasks DONE: Lead review.
 
-Members mark assigned work `READY_FOR_REVIEW` unless the Lead or user explicitly approves direct `DONE`.
+Members mark assigned work `READY_FOR_REVIEW` unless the review target explicitly approves direct `DONE`.
 
 ## Startup Checklist
 

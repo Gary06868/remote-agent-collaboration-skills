@@ -6,6 +6,7 @@ continue to describe one coherent Lite Lead/Member workflow.
 """
 
 from pathlib import Path
+import os
 import re
 import shutil
 import subprocess
@@ -58,10 +59,19 @@ LOCK_FIELDS = [
     "Notes:",
 ]
 
+WINDOWS_ABSOLUTE_PATH_PATTERN = r"(?<![A-Za-z0-9_])[A-Za-z]:[\\/]+[^\s\"'`<>|*?]+"
+SECRET_PATTERNS = [
+    WINDOWS_ABSOLUTE_PATH_PATTERN,
+    r"sk-proj-[A-Za-z0-9_-]+",
+    r"sk-[A-Za-z0-9]{20,}",
+]
+
 HANDOFF_FIELDS = [
     "Handoff ID:",
     "From Actor:",
-    "To Actor:",
+    "Target Type: actor | human-user",
+    "Target Actor ID:",
+    "Target Human:",
     "Task:",
     "Scope:",
     "Required Next Action:",
@@ -108,7 +118,12 @@ class ProductBoundaryTests(unittest.TestCase):
             english,
             [
                 "Remote Agent Collaboration Lite",
-                "No server, no database, no CLI, no hooks.",
+                "No server, no database, no hooks, and no custom collaboration CLI.",
+                "Just Markdown files and optional Git.",
+                "Workspace Topology",
+                "Workflow Options",
+                "Remote Git Mode (Beta)",
+                "Codex and Claude compatibility",
                 "It does not try to enforce permissions.",
                 "soft locks",
                 "team-lead-collaboration",
@@ -121,8 +136,14 @@ class ProductBoundaryTests(unittest.TestCase):
             chinese,
             [
                 "Remote Agent Collaboration Lite",
-                "不需要服务器、不需要数据库、不需要 CLI、不需要 hooks。",
-                "它不是权限系统。",
+                "hooks",
+                "Markdown",
+                "Workspace Topology",
+                "Workflow Options",
+                "Remote Git Mode (Beta)",
+                "Codex",
+                "Claude",
+                "权限系统",
                 "软锁",
                 "team-lead-collaboration",
                 "team-member-collaboration",
@@ -175,7 +196,7 @@ class SkillContractTests(unittest.TestCase):
                 "name: team-lead-collaboration",
                 "Use only when the user explicitly selects $team-lead-collaboration",
                 "Do not use this Skill implicitly.",
-                "Do not claim hard permission enforcement, role locks, hooks, a CLI, or a server.",
+                "Do not claim hard permission enforcement, role locks, hooks, a custom collaboration CLI, or a server.",
                 "Do not use this Skill when the user wants you to act only as a task executor",
             ],
         )
@@ -189,10 +210,24 @@ class SkillContractTests(unittest.TestCase):
                 "name: team-member-collaboration",
                 "Use only when the user explicitly selects $team-member-collaboration",
                 "Do not use this Skill implicitly.",
-                "Do not claim hard permission enforcement, role locks, hooks, a CLI, or a server.",
+                "Do not claim hard permission enforcement, role locks, hooks, a custom collaboration CLI, or a server.",
                 "Do not use this Skill when the user asks you to initialize collaboration rules",
             ],
         )
+
+    def test_skills_follow_user_requested_conversation_and_document_languages(self) -> None:
+        required = [
+            "## Language Policy",
+            "Default conversational replies to the language of the user's current prompt.",
+            "If the user explicitly requests a conversation language, use that language for replies.",
+            "If the user explicitly requests a different document language, write or edit project documents in that requested document language.",
+            "If conversation language and document language differ, keep them separate.",
+            "Do not let the English wording of this Skill force English output.",
+            "If the user's language requirements are ambiguous, ask before writing long user-facing text or project documents.",
+        ]
+        for path in [LEAD_SKILL, MEMBER_SKILL]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                assert_contains_all(self, read(path), required)
 
     def test_lead_and_member_define_complete_identity_bootstrap(self) -> None:
         lead = read(LEAD_SKILL)
@@ -231,6 +266,29 @@ class SkillContractTests(unittest.TestCase):
                 "## What Not To Force",
                 "Every project needs module ownership.",
                 "Every project needs task management.",
+            ],
+        )
+
+    def test_lead_initialization_collects_team_division_model_and_outputs_member_prompts(self) -> None:
+        text = read(LEAD_SKILL)
+        assert_contains_all(
+            self,
+            text,
+            [
+                "## Required Question: Collaboration Team Model",
+                "Do you already have an existing collaboration team model?",
+                "How many humans are participating?",
+                "For each human, how many AI subagents or AI threads do they operate?",
+                "What is each human or AI subagent responsible for?",
+                "If the user already has a model, ask follow-up questions until the human owners, AI subagents, roles, scopes, and reporting relationships are clear.",
+                "If the user does not have a model, ask whether they want you to propose a recommended collaboration model.",
+                "Do not generate a recommended model until the user asks for one.",
+                "After the collaboration team model is understood or proposed, generate one initialization prompt for each Member in the conversation.",
+                "$team-member-collaboration",
+                "read `AGENTS.md`, `COLLAB_LOG.md`, optional `TEAM_TASKS.md`, and optional `MODULE_OWNERSHIP.md`",
+                "understand the project and collaboration mechanism",
+                "preserve the user's conversation and document language requirements",
+                "complete Member initialization",
             ],
         )
 
@@ -303,6 +361,39 @@ class SkillContractTests(unittest.TestCase):
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
                 assert_contains_all(self, read(path), required)
 
+    def test_actor_status_semantics_are_consistent(self) -> None:
+        required = [
+            "## Actor Status Semantics",
+            "`active`: the actor may accept work and acquire, refresh, pause, resume, and release locks.",
+            "`paused`: the actor is temporarily unavailable for new scope.",
+            "`retired`: the actor no longer accepts new work and must not hold an active lock.",
+            "Allowed transitions: active -> paused -> active, active -> retired, paused -> retired.",
+            "A Member may update only its own Actor Registry entry.",
+            "`Last seen` updates when the actor starts work, acquires a lock, refreshes a lock, pauses, resumes, releases, changes task status, creates a handoff, or responds to a handoff.",
+            "`Current scope` updates when the actor acquires, pauses, resumes, or releases a lock, or when assigned task scope changes.",
+        ]
+        for path in [README, README_ZH, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                assert_contains_all(self, read(path), required)
+
+    def test_scope_canonicalization_rules_are_consistent(self) -> None:
+        required = [
+            "## Scope Canonicalization",
+            "Use repository-relative paths only.",
+            "Use `/` as the separator.",
+            "Remove a leading `./`.",
+            "Collapse repeated `/` characters.",
+            "Remove trailing `/` except for repository root.",
+            "Separate multiple paths with `;`.",
+            "Trim whitespace around each path.",
+            "Reject absolute paths.",
+            "Reject `..` path segments.",
+            "Scopes overlap when any canonical path is equal, parent/child, or shares a declared module/interface boundary.",
+        ]
+        for path in [README, README_ZH, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                assert_contains_all(self, read(path), required)
+
     def test_final_reconciliation_is_required_for_both_skills(self) -> None:
         required = [
             "## Final Reconciliation",
@@ -315,6 +406,28 @@ class SkillContractTests(unittest.TestCase):
         for path in [LEAD_SKILL, MEMBER_SKILL]:
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
                 assert_contains_all(self, read(path), required)
+
+    def test_member_completion_updates_own_actor_registry_last_seen(self) -> None:
+        text = read(MEMBER_SKILL)
+        assert_contains_all(
+            self,
+            text,
+            [
+                "Before reporting completion, update your own Actor Registry `Last seen` to the completion or Latest Updates timestamp.",
+                "Update your own Actor Registry `Current scope` so it matches the completed, paused, or remaining active scope.",
+            ],
+        )
+
+    def test_lead_final_reconciliation_checks_actor_registry_freshness(self) -> None:
+        text = read(LEAD_SKILL)
+        assert_contains_all(
+            self,
+            text,
+            [
+                "Actor Registry `Last seen` and `Current scope` are not behind Latest Updates, task events, lock events, or handoff events.",
+                "If a Latest Updates entry or task event is newer than an actor's `Last seen`, treat the Actor Registry entry as stale and reconcile it before review sign-off.",
+            ],
+        )
 
 
 class TemplateContractTests(unittest.TestCase):
@@ -563,7 +676,7 @@ class ExampleConsistencyTests(unittest.TestCase):
             [
                 "Stage: Review.",
                 "Active work: TASK-001 is ready for review; no active write lock remains.",
-                "Next action: Lead or user reviews TASK-001.",
+                "Next action: alex-codex-lead-coordinator-01 reviews TASK-001.",
                 "Updated by: morgan-claude-member-content-01",
             ],
         )
@@ -575,7 +688,7 @@ class ExampleConsistencyTests(unittest.TestCase):
                 "Status: READY_FOR_REVIEW",
                 "Owner ID: morgan-claude-member-content-01",
                 "Owner Display: Morgan's Claude #01 (Member - Content Developer)",
-                "Next Action: Lead or user reviews TASK-001.",
+                "Next Action: alex-codex-lead-coordinator-01 reviews TASK-001.",
             ],
         )
         assert_contains_all(
@@ -584,7 +697,8 @@ class ExampleConsistencyTests(unittest.TestCase):
             [
                 "Handoff ID: H-002",
                 "From Actor: morgan-claude-member-content-01",
-                "To Actor: alex-codex-lead-coordinator-01 or user",
+                "Target Type: actor",
+                "Target Actor ID: alex-codex-lead-coordinator-01",
                 "Task: TASK-001",
                 "Status: open",
             ],
@@ -596,8 +710,35 @@ class ExampleConsistencyTests(unittest.TestCase):
             history,
             [
                 "Handoff ID: H-001",
+                "Target Type: actor",
+                "Target Actor ID: morgan-claude-member-content-01",
                 "Status: resolved",
                 "Morgan accepted and completed TASK-001.",
+            ],
+        )
+        self.assertNotIn("To Actor:", history)
+
+    def test_open_handoffs_show_unresolved_items_and_history_archives_resolved_items(self) -> None:
+        log = read(EXAMPLE / "COLLAB_LOG.md")
+        open_handoffs = section(log, "## Open Handoffs")
+        history = section(log, "## History / Archived Notes")
+
+        self.assertIn("Status: open", open_handoffs)
+        self.assertNotIn("Status: resolved", open_handoffs)
+        self.assertNotIn("Status: cancelled", open_handoffs)
+        self.assertIn("Status: resolved", history)
+        self.assertIn("Handoff ID: H-001", history)
+
+        events = "\n".join(read(path) for path in (EXAMPLE / ".collab" / "events").glob("*.md"))
+        assert_contains_all(
+            self,
+            events,
+            [
+                "Type: review handoff",
+                "Type: user review handoff",
+                "Type: self completion",
+                "Type: review loop",
+                "Result: Task completed under Member self-completion with no review handoff.",
             ],
         )
 
@@ -633,18 +774,18 @@ class InstallDocsTests(unittest.TestCase):
             self,
             text,
             [
-                "## 60-Second Install",
-                "Copy-paste prompt for an AI Agent",
-                "Project-level install",
+                "## Install",
+                "### Option 1 - Codex Plugin (preferred)",
+                "Adding the marketplace does not install the Plugin.",
+                "Open `/plugins`",
+                "### Option 3 - Manual Copy",
                 "Windows PowerShell",
                 "macOS/Linux shell",
-                "Installed directory shape",
                 "Verify both Skills are visible",
                 "Install both Skills. Use one role per thread.",
             ],
         )
-        self.assertNotIn("codex plugin marketplace add", text)
-        self.assertNotIn("codex plugin add", text)
+        self.assertNotIn("```powershell\ncodex plugin add", text)
 
     def test_chinese_readme_has_matching_agent_install_section(self) -> None:
         text = read(README_ZH)
@@ -652,12 +793,13 @@ class InstallDocsTests(unittest.TestCase):
             self,
             text,
             [
-                "## 60 秒安装",
-                "给 AI Agent 的可复制安装 Prompt",
-                "项目级安装",
+                "## Install",
+                "### Option 1 - Codex Plugin",
+                "添加 marketplace 不等于已经安装 Plugin。",
+                "打开 `/plugins`",
+                "### Option 3 - Manual Copy",
                 "Windows PowerShell",
                 "macOS/Linux shell",
-                "安装后的目录结构",
                 "验证两个 Skill 都可见",
                 "同时安装两个 Skill。每个 thread 只使用一个角色。",
             ],
@@ -693,6 +835,11 @@ class E2EReportTests(unittest.TestCase):
 
 
 class MarkdownLinkAndPrivacyTests(unittest.TestCase):
+    def test_readmes_are_utf8_without_bom(self) -> None:
+        for path in [README, README_ZH]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                self.assertFalse(path.read_bytes().startswith(b"\xef\xbb\xbf"))
+
     def test_local_markdown_links_resolve(self) -> None:
         files = [
             README,
@@ -714,15 +861,12 @@ class MarkdownLinkAndPrivacyTests(unittest.TestCase):
                     self.assertTrue(resolved.exists(), f"Missing local link target: {target}")
 
     def test_public_files_do_not_leak_local_paths_or_private_source_terms(self) -> None:
-        patterns = [
-            r"[A-Za-z]:\\",
-            "MetaAgent" + "_devel",
-            "meta_agent" + "_platform",
-            "b9877" + "e3c",
-            "359914" + "ac",
-            "Lead" + "-Setup",
-            "Member" + "-Content-01",
+        private_patterns = [
+            pattern
+            for pattern in os.environ.get("RACL_PRIVATE_SCAN_PATTERNS", "").splitlines()
+            if pattern.strip()
         ]
+        patterns = SECRET_PATTERNS + private_patterns
         tracked = subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines()
         for relative_path in tracked:
             path = ROOT / relative_path
@@ -735,12 +879,22 @@ class MarkdownLinkAndPrivacyTests(unittest.TestCase):
                 with self.subTest(path=path.relative_to(ROOT).as_posix(), pattern=pattern):
                     self.assertIsNone(re.search(pattern, text), f"Found private pattern {pattern}")
 
+    def test_windows_absolute_path_pattern_ignores_diagnostic_labels(self) -> None:
+        windows_path = "C:" + "\\" + "Users" + "\\" + "Example" + "\\" + "repo"
+        drive_slash_path = "D:" + "/workspace/repo"
+
+        self.assertIsNone(re.search(WINDOWS_ABSOLUTE_PATH_PATTERN, "STDOUT:\\nSTDERR:\\n"))
+        self.assertIsNotNone(re.search(WINDOWS_ABSOLUTE_PATH_PATTERN, f"path {windows_path}"))
+        self.assertIsNotNone(re.search(WINDOWS_ABSOLUTE_PATH_PATTERN, f"path {drive_slash_path}"))
+
     def test_version_is_updated_for_identity_protocol(self) -> None:
         assert_contains_all(
             self,
             read(CHANGELOG),
             [
-                "## 0.3.0",
+                "## 0.4.0",
+                "Remote Git Mode",
+                "Shared Workspace Mode",
                 "Actor Identity Protocol",
                 "Current Snapshot",
                 "Open Handoffs",
