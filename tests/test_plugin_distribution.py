@@ -58,8 +58,8 @@ class PluginManifestTests(unittest.TestCase):
         self.assertEqual("./skills/", manifest["skills"])
         self.assertEqual("Remote Agent Collaboration Lite", manifest["interface"]["displayName"])
         self.assertEqual("Gary06868", manifest["interface"]["developerName"])
-        self.assertEqual("./assets/plugin-icon.svg", manifest["interface"]["composerIcon"])
-        self.assertEqual("./assets/plugin-icon.svg", manifest["interface"]["logo"])
+        self.assertEqual("./assets/plugin-icon.png", manifest["interface"]["composerIcon"])
+        self.assertEqual("./assets/plugin-icon.png", manifest["interface"]["logo"])
 
         skill_names = sorted(path.name for path in PLUGIN_SKILLS.iterdir() if path.is_dir())
         self.assertEqual(["team-lead-collaboration", "team-member-collaboration"], skill_names)
@@ -97,14 +97,12 @@ class PluginManifestTests(unittest.TestCase):
                     (PLUGIN_SKILLS / "team-lead-collaboration" / "references" / reference).read_bytes(),
                 )
 
-    def test_plugin_icon_is_original_svg_asset(self) -> None:
-        icon = PLUGIN_ASSETS / "plugin-icon.svg"
-        text = read(icon)
+    def test_plugin_icon_is_original_png_asset(self) -> None:
+        icon = PLUGIN_ASSETS / "plugin-icon.png"
 
-        self.assertIn("<svg", text)
-        self.assertIn("viewBox", text)
-        self.assertNotIn("superpowers", text.lower())
-        self.assertLess(icon.stat().st_size, 20_000)
+        self.assertTrue(icon.exists())
+        self.assertTrue(icon.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertLess(icon.stat().st_size, 200_000)
 
 
 class MarketplaceMetadataTests(unittest.TestCase):
