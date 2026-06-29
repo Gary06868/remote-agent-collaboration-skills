@@ -877,6 +877,7 @@ class InstallDocsTests(unittest.TestCase):
         )
         self.assertNotIn("## Actor Status Semantics", text)
         self.assertNotIn("## Scope Canonicalization", text)
+        self.assertIn('width="720"', text)
 
     def test_readme_uses_provided_visual_assets_without_video_demo(self) -> None:
         text = read(README)
@@ -891,6 +892,7 @@ class InstallDocsTests(unittest.TestCase):
                 self.assertTrue((DOC_ASSETS / asset).exists())
                 self.assertTrue((DOC_ASSETS / asset).read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertIn('alt="Remote Agent Collaboration Lite product banner"', text)
+        self.assertIn('width="720"', text)
         self.assertIn("![Codex initialization demo showing collaboration files created]", text)
         self.assertIn("![Architecture diagram showing Lead and Member threads coordinating through collaboration files]", text)
         self.assertNotIn("demo.gif", text)

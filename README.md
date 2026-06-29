@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/remote-agent-collaboration-hero.png" alt="Remote Agent Collaboration Lite product banner">
+  <img src="docs/assets/remote-agent-collaboration-hero.png" alt="Remote Agent Collaboration Lite product banner" width="720">
 </p>
 
 <h1 align="center">Remote Agent Collaboration Lite</h1>
