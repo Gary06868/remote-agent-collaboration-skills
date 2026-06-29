@@ -1,39 +1,130 @@
-# Remote Agent Collaboration Lite
+<p align="center">
+  <img src="docs/assets/remote-agent-collaboration-hero.png" alt="Remote Agent Collaboration Lite product banner">
+</p>
 
-If you are vibe coding with friends, cofounders, contractors, or several AI agents, this is the lightweight coordination layer you want before the repo turns into scattered chats and duplicate edits.
+<h1 align="center">Remote Agent Collaboration Lite</h1>
 
-Remote Agent Collaboration Lite gives your small team two Markdown Skills, Lead and Member, plus shared project files for actor identity, soft locks, logs, optional tasks, and optional module boundaries.
+<p align="center"><strong>Lightweight collaboration layer for human + AI coding teams.</strong></p>
 
-No server, no database, no hooks, and no custom collaboration CLI.
-Just Markdown files and optional Git.
+<p align="center">
+Coordinate Lead and Member agents in one repo, reduce duplicate edits, coordination drift, and unclear ownership.
+</p>
 
-If this helps your AI coding workflow, a GitHub star helps others discover it.
+<p align="center">
+Codex Plugin first-class support | Claude Code supported through adapter | Generic agents compatible through shared instructions.
+</p>
+
+<p align="center">
+  <img alt="Status: Beta" src="https://img.shields.io/badge/Status-Beta-7c3aed">
+  <img alt="Plugin: v0.5.0" src="https://img.shields.io/badge/Plugin-v0.5.0-2563eb">
+  <img alt="Build: Passing" src="https://img.shields.io/badge/Build-Passing-16a34a">
+  <img alt="Codex" src="https://img.shields.io/badge/Codex-Plugin-111827">
+  <img alt="Claude Code Adapter" src="https://img.shields.io/badge/Claude%20Code-Adapter-f97316">
+  <img alt="Docs" src="https://img.shields.io/badge/Docs-Ready-0f766e">
+  <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-374151">
+</p>
+
+<p align="center">
+  <a href="#30-second-quick-start">Quick Start</a> |
+  <a href="#install">Installation</a> |
+  <a href="adapters/claude-code/">Claude Code Adapter</a> |
+  <a href="docs/REMOTE_GIT_MODE.md">Remote Git Mode</a> |
+  <a href="docs/PROTOCOL_REFERENCE.md">Protocol</a> |
+  <a href="README.zh-CN.md">中文</a>
+</p>
+
+If you are vibe coding with friends, cofounders, contractors, or several AI agents, this is the coordination layer you want before the repo turns into scattered chats and duplicate edits.
+
+No server, no database, no hooks, and no custom collaboration CLI. Just Markdown files and optional Git.
 
 Install both Skills. Use one role per thread.
 
 - `team-lead-collaboration`
 - `team-member-collaboration`
 
-Start one Lead thread:
+## What It Is
 
-```text
-$team-lead-collaboration Set up lightweight collaboration for this project.
+Remote Agent Collaboration Lite is a lightweight collaboration layer for human + AI coding teams. It gives a small team two Markdown Skills, Lead and Member, plus shared project files for actor identity, soft locks, logs, optional tasks, and optional module boundaries.
+
+It does not try to enforce permissions. It gives humans and agents a shared operating surface: read the same coordination files, claim scope before editing, stop on overlapping soft locks, and leave a concise update or handoff when work changes state.
+
+![Architecture diagram showing Lead and Member threads coordinating through collaboration files](docs/assets/remote-agent-collaboration-architecture.png)
+
+## Why Use It
+
+Use it when:
+
+- A small team or tiny company is building in one repository.
+- Several Codex, Claude Code, or generic AI threads may edit related files.
+- You want a Lead agent to coordinate work without introducing infrastructure.
+- You need lightweight logs and soft locks instead of a full project management system.
+- You want new human or AI contributors to understand ownership and next actions quickly.
+
+The practical value is simple: fewer duplicate edits, fewer stale chat-only decisions, clearer ownership, and better handoffs.
+
+## Works With
+
+| Agent / Environment | Support Level | Recommended Path |
+| --- | --- | --- |
+| Codex | First-class | Plugin |
+| Claude Code | Supported | Claude adapter |
+| Generic AI agents | Compatible | Copy-paste prompts / shared instructions |
+| Human contributors | Supported | Shared collaboration files |
+
+Codex and Claude compatibility is explicit, but not identical. Codex uses the bundled Plugin and Skills. Claude Code uses the [Claude Code adapter](adapters/claude-code/) and shared project instructions. Generic agents can follow the same Markdown instructions, but this project does not claim native support for every agent environment.
+
+## 30-Second Quick Start
+
+```powershell
+codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
 ```
 
-Start Member threads:
+1. Open `/plugins`.
+2. Install `Remote Agent Collaboration Lite`.
+3. Start one Lead thread:
 
-```text
-$team-member-collaboration Work on my assigned scope and update the shared collaboration log.
-```
+   ```text
+   $team-lead-collaboration Set up lightweight collaboration for this project.
+   ```
 
-```mermaid
-flowchart LR
-  A["Install Plugin"] --> B["Lead sets rules"]
-  B --> C["Members register identity"]
-  C --> D["Members check soft locks"]
-  D --> E["Work happens"]
-  E --> F["Tasks, logs, and handoffs reconcile"]
-```
+4. Start one or more Member threads:
+
+   ```text
+   $team-member-collaboration Work on my assigned scope and update the shared collaboration log.
+   ```
+
+5. Claude Code users: start with the [Claude Code adapter](adapters/claude-code/).
+
+![Codex initialization demo showing collaboration files created](docs/assets/remote-agent-collaboration-demo.png)
+
+## Choose Your Mode
+
+| Need | Mode | What It Means |
+| --- | --- | --- |
+| Multiple agents in the same working directory | Shared Workspace Mode | Agents coordinate through root Markdown files and double-check Active Work Locks after writing your own lock. |
+| Different machines, clones, or worktrees | Remote Git Mode (Beta) | Agents use Git as the sync transport and low-conflict `.collab/` files. |
+| Lightweight coordination only | Casual Coordination Mode | Use `AGENTS.md` and `COLLAB_LOG.md` without task tracking. |
+| Lead assigns and reviews tasks | Task Assignment Mode | Add `TEAM_TASKS.md` for task owner, status, review, and handoff blocks. |
+| Clear path/module boundaries | Module Ownership Mode | Add `MODULE_OWNERSHIP.md` for owners, allowed paths, interfaces, and risks. |
+
+Workspace Topology answers where agents are working. Workflow Options answer how the team tracks work. Shared Workspace Mode means the same working directory. Remote Git Mode means different machines, clones, or worktrees. Do not mix assumptions between these modes.
+
+Remote Git Mode Lock Protocol summary: fetch the latest remote state, read existing locks, create a candidate lock record, commit only the candidate lock, push the candidate lock, and handle non-fast-forward by fetch, rebase or reapply the candidate lock, re-read all locks, and re-evaluate scope overlap. Do not force push. Only edit business files after the candidate lock is published and rechecked on the latest remote state. Lock lifecycle terms are acquire, refresh, pause, resume, release, stale, and abandoned.
+
+Remote Git Mode low-conflict state uses `.collab/locks/<actor-id>.md`, `.collab/tasks/<task-id>.md`, `.collab/events/<timestamp>-<actor-id>.md`, and `.collab/snapshots/COLLAB_LOG.md`. These files separate authoritative state, append-only event records, and derived snapshot files that Lead may rebuild.
+
+## Example Flow: Soft Lock Conflict
+
+The tiny-team example shows the core value of soft locks:
+
+1. Member A claims `README.md` for writing in `COLLAB_LOG.md`.
+2. Member B reads Active Work Locks before editing.
+3. Member B detects the overlap and stops before editing business files.
+4. The Lead reconciles Current Snapshot, Open Handoffs, and task state.
+
+The rule is intentionally plain: reading with reading does not conflict by default; writing with overlapping writing is a conflict; reading with overlapping writing requires a warning; paused still reserves the scope; stale threshold: 2 hours unless `AGENTS.md` overrides it. Do not remove another actor's stale lock without user or Lead confirmation.
+
+See [`examples/tiny-team-project`](examples/tiny-team-project/) for the full sample state.
 
 ## Install
 
@@ -63,8 +154,6 @@ Install it from Codex:
    - `team-member-collaboration`
 6. Activate exactly one role in that thread.
 
-This README uses `/plugins` for Plugin installation. It does not list a non-interactive install command unless that command is verified for this repository.
-
 Update later:
 
 ```powershell
@@ -81,7 +170,7 @@ Uninstalling or disabling the Plugin must not delete project collaboration files
 
 ### Option 2 - Built-in Skill Installer
 
-The built-in `$skill-installer` is a local fallback concept, but this repository does not publish it as a verified install path yet. Use the Plugin path above, or the manual copy path below for development and recovery.
+The built-in `$skill-installer` is a fallback concept for environments that support it, but this repository does not publish it as the primary verified path. Use the Plugin path above, or the manual copy path below for development and recovery.
 
 ### Option 3 - Manual Copy
 
@@ -121,7 +210,7 @@ Verify both Skills are visible in your AI coding environment's Skill picker or m
 
 ## For AI Agents: Install the Plugin and Verify Both Skills
 
-Copy this instruction into a fresh Agent when you want it to install the product:
+Copy this instruction into a fresh Agent:
 
 ```text
 Install the Remote Agent Collaboration Lite Plugin from:
@@ -150,20 +239,6 @@ Requirements:
 - Report Plugin version 0.5.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
 ```
 
-## What This Is
-
-Remote Agent Collaboration Lite is a Markdown-only collaboration workflow for one project lead and multiple contributors. Contributors can be humans, Codex threads, Claude threads, other AI agents, or a mix of all of them.
-
-It does not try to enforce permissions. It gives agents explicit instructions to read the same project files, claim work before editing, avoid conflicting scopes, and leave short handoff notes.
-
-Use it when:
-
-- A small team or tiny company is building in one repository.
-- Several AI threads may edit related files.
-- You want a lead agent to coordinate work without introducing infrastructure.
-- You need lightweight logs and soft locks instead of a full project management system.
-- You want a new contributor to understand the collaboration rules in five minutes.
-
 ## Core Files
 
 | File | Required | Purpose |
@@ -172,112 +247,30 @@ Use it when:
 | `COLLAB_LOG.md` | Yes | Active locks, Current Snapshot, blockers, Open Handoffs, decisions, updates, and history. |
 | `TEAM_TASKS.md` | Optional | Lightweight task blocks when Task Assignment Mode is enabled. |
 | `MODULE_OWNERSHIP.md` | Optional | Module owners and path boundaries when Module Ownership Mode is enabled. |
+| `.collab/` | Remote Git Mode only | Low-conflict locks, tasks, events, and derived snapshots for multi-clone coordination. |
 
 Templates are available in [`templates/`](templates/). The Lead Skill also carries identical self-contained templates in [`skills/team-lead-collaboration/references/`](skills/team-lead-collaboration/references/).
-
-## Workspace Topology
-
-Choose the workspace topology first. This answers where agents are working, not which task workflow the team uses.
-
-Shared Workspace Mode is for multiple agents using the same working directory. Agents coordinate through the root Markdown files, use local Active Work Locks, and double-check Active Work Locks after writing your own lock before editing business files.
-
-Remote Git Mode (Beta) is for different machines, clones, or worktrees coordinating through a Git remote. Do not mix assumptions between these modes. Git is only the synchronization transport. It is not a permission service, a lock server, or a runtime daemon.
-
-Remote Git Mode uses low-conflict Markdown state: `.collab/locks/<actor-id>.md`, `.collab/tasks/<task-id>.md`, `.collab/events/<timestamp>-<actor-id>.md`, `.collab/snapshots/COLLAB_LOG.md`, and `COLLAB_LOG.md`. These are authoritative state, append-only event, and derived snapshot files that Lead may rebuild where appropriate.
-
-See [docs/REMOTE_GIT_MODE.md](docs/REMOTE_GIT_MODE.md) for the full Remote Git Mode Lock Protocol, including fetch the latest remote state, create a candidate lock record, commit only the candidate lock, push the candidate lock, non-fast-forward recovery, fetch, rebase or reapply the candidate lock, re-read all locks, and re-evaluate scope overlap. Do not force push. Only edit business files after the candidate lock is published and rechecked on the latest remote state. Lock lifecycle terms are acquire, refresh, pause, resume, release, stale, and abandoned.
-
-## Workflow Options
-
-Casual Coordination Mode is the default. It uses only `AGENTS.md` and `COLLAB_LOG.md`. Task Assignment Mode is optional and adds `TEAM_TASKS.md`. Module Ownership Mode is optional and adds `MODULE_OWNERSHIP.md` only when the user wants module boundaries.
-
-Workflow Options are independent of Workspace Topology. For example, a team can use Task Assignment Mode in either Shared Workspace Mode or Remote Git Mode (Beta).
-
-## Protocol Summary
-
-Actor identity fields are stable across all collaboration files:
-
-- Human owner:
-- Agent platform:
-- Collaboration role:
-- Functional role:
-- Instance:
-- Actor ID:
-- Display name:
-
-## Actor Status Semantics
-
-`active`: the actor may accept work and acquire, refresh, pause, resume, and release locks. `paused`: the actor is temporarily unavailable for new scope. `retired`: the actor no longer accepts new work and must not hold an active lock. Allowed transitions: active -> paused -> active, active -> retired, paused -> retired. A Member may update only its own Actor Registry entry. `Last seen` updates when the actor starts work, acquires a lock, refreshes a lock, pauses, resumes, releases, changes task status, creates a handoff, or responds to a handoff. `Current scope` updates when the actor acquires, pauses, resumes, or releases a lock, or when assigned task scope changes.
-
-Active Work Locks use this shape:
-
-```markdown
-- Actor ID:
-  Display Name:
-  Collaboration Role: Lead | Member
-  Functional Role:
-  Status: reading | writing | paused
-  Scope:
-  Task:
-  Started:
-  Last Updated:
-  Expected Finish:
-  Notes:
-```
-
-Conflict semantics: reading with reading does not conflict by default; writing with overlapping writing is a conflict; reading with overlapping writing requires a warning; paused still reserves the scope; stale threshold: 2 hours unless `AGENTS.md` overrides it. Do not remove another actor's stale lock without user or Lead confirmation.
-
-## Scope Canonicalization
-
-Use repository-relative paths only. Use `/` as the separator. Remove a leading `./`. Collapse repeated `/` characters. Remove trailing `/` except for repository root. Separate multiple paths with `;`. Trim whitespace around each path. Reject absolute paths. Reject `..` path segments. Scopes overlap when any canonical path is equal, parent/child, or shares a declared module/interface boundary.
-
-Final Reconciliation keeps Active Work Locks, TEAM_TASKS.md status, Current Snapshot, Open Handoffs, Recent Decisions, actor_id consistency, timestamps, and file-to-file state aligned after major work.
-
-Completion Policy options are Lead review, User review, Member self-completion, and Per-task decision. Review loops are explicit: `CHANGES_REQUESTED -> IN_PROGRESS -> READY_FOR_REVIEW` for review policies, or `CHANGES_REQUESTED -> IN_PROGRESS -> DONE` for Member self-completion.
-
-See [docs/PROTOCOL_REFERENCE.md](docs/PROTOCOL_REFERENCE.md) for the full protocol.
-
-## Quick Start
-
-1. Install both Skills through the Plugin.
-2. Start a Lead thread with `$team-lead-collaboration`.
-3. The Lead checks whether the project is empty or existing, confirms actor identity, creates or updates `AGENTS.md` and `COLLAB_LOG.md`, asks whether to enable Task Assignment Mode, asks "Who may mark tasks DONE?", and asks whether to enable Module Ownership Mode.
-4. Start one or more Member threads with `$team-member-collaboration`.
-5. Each Member confirms identity, checks Active Work Locks, adds a lock when safe, removes it when done, and runs Final Reconciliation.
-
-## Example Tiny Team Flow
-
-See [`examples/tiny-team-project`](examples/tiny-team-project/).
-
-The example shows Task Assignment Mode enabled, Module Ownership Mode not enabled yet, one Member adding a lock, a second Member detecting an overlapping lock and stopping before editing, READY_FOR_REVIEW handoff, and Current Snapshot/Open Handoffs consistency.
-
-## Why a Plugin?
-
-Markdown Skill content stays simple. The Plugin only packages and distributes the two Skills as one installable product, with icon metadata and versioning. This follows the same general distribution idea used by multi-Skill Codex Plugins: package several Markdown Skills as one installable product.
-
-## Codex and Claude compatibility
-
-These Skills are plain Markdown folders. Codex can use them through its Skill system. Claude or other AI agents can read the same `SKILL.md` files as project instructions when their environment does not expose a native Skill picker. The collaboration files remain ordinary Markdown either way.
-
-## Limitations
-
-- This is a soft coordination workflow.
-- It does not enforce OS-level permissions.
-- It does not prevent someone from ignoring the rules.
-- It works because agents are instructed to read and follow shared Markdown files.
-- It is intentionally not a server, database, custom collaboration CLI, hook system, or enterprise permission model.
-
-## Version
-
-Current Lite protocol version: `0.5.0`.
-
-Advanced local protocol experiments are preserved on the `standard-local-protocol` branch.
 
 ## More Docs
 
 - [Installation](docs/INSTALLATION.md)
 - [Protocol Reference](docs/PROTOCOL_REFERENCE.md)
 - [Remote Git Mode](docs/REMOTE_GIT_MODE.md)
+- [Claude Code Adapter](adapters/claude-code/)
 - [Codex Plugin Distribution Audit](docs/CODEX_PLUGIN_DISTRIBUTION_AUDIT.md)
 - [Promotion Kit](docs/PROMOTION_KIT.md)
 - [Chinese README](README.zh-CN.md)
+
+## Limitations
+
+- This is a soft coordination workflow, not a security boundary.
+- It does not enforce OS-level permissions.
+- It does not prevent someone from ignoring the rules.
+- Git is optional in Shared Workspace Mode and required only when the team chooses Remote Git Mode (Beta).
+- Claude Code support is adapter-based support, not a native Claude plugin.
+- Generic agent support means compatible shared instructions, not native integration for every environment.
+- It is intentionally not a server, database, custom collaboration CLI, hook system, MCP server, daemon, or enterprise permission model.
+
+Current Lite protocol version: `0.5.0`.
+
+Advanced local protocol experiments are preserved on the `standard-local-protocol` branch.

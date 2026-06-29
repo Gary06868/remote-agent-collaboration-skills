@@ -39,6 +39,10 @@
     "brandColor": "#2563EB",
     "composerIcon": "./assets/plugin-icon.png",
     "logo": "./assets/plugin-icon.png",
-    "screenshots": []
+    "screenshots": [
+      "./assets/plugin-cover-source.png",
+      "./assets/plugin-demo.png",
+      "./assets/plugin-architecture.png"
+    ]
   }
 }

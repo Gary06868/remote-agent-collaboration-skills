@@ -60,6 +60,14 @@ class PluginManifestTests(unittest.TestCase):
         self.assertEqual("Gary06868", manifest["interface"]["developerName"])
         self.assertEqual("./assets/plugin-icon.png", manifest["interface"]["composerIcon"])
         self.assertEqual("./assets/plugin-icon.png", manifest["interface"]["logo"])
+        self.assertEqual(
+            [
+                "./assets/plugin-cover-source.png",
+                "./assets/plugin-demo.png",
+                "./assets/plugin-architecture.png",
+            ],
+            manifest["interface"]["screenshots"],
+        )
 
         skill_names = sorted(path.name for path in PLUGIN_SKILLS.iterdir() if path.is_dir())
         self.assertEqual(["team-lead-collaboration", "team-member-collaboration"], skill_names)
@@ -103,6 +111,19 @@ class PluginManifestTests(unittest.TestCase):
         self.assertTrue(icon.exists())
         self.assertTrue(icon.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertLess(icon.stat().st_size, 200_000)
+
+    def test_plugin_screenshots_are_packaged_png_assets(self) -> None:
+        manifest = load_json(PLUGIN_MANIFEST)
+        screenshots = manifest["interface"]["screenshots"]
+
+        self.assertEqual(3, len(screenshots))
+        for screenshot in screenshots:
+            with self.subTest(screenshot=screenshot):
+                self.assertTrue(screenshot.startswith("./assets/"))
+                asset = PLUGIN_ROOT / screenshot.removeprefix("./")
+                self.assertTrue(asset.exists())
+                self.assertTrue(asset.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
+                self.assertLess(asset.stat().st_size, 3_000_000)
 
 
 class MarketplaceMetadataTests(unittest.TestCase):

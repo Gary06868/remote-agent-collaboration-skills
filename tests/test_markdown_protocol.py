@@ -20,6 +20,10 @@ README = ROOT / "README.md"
 README_ZH = ROOT / "README.zh-CN.md"
 CONTRIBUTING = ROOT / "CONTRIBUTING.md"
 CHANGELOG = ROOT / "CHANGELOG.md"
+PROTOCOL_REFERENCE = ROOT / "docs" / "PROTOCOL_REFERENCE.md"
+REMOTE_GIT_MODE = ROOT / "docs" / "REMOTE_GIT_MODE.md"
+DOC_ASSETS = ROOT / "docs" / "assets"
+CLAUDE_ADAPTER = ROOT / "adapters" / "claude-code"
 LEAD_SKILL = ROOT / "skills" / "team-lead-collaboration" / "SKILL.md"
 MEMBER_SKILL = ROOT / "skills" / "team-member-collaboration" / "SKILL.md"
 TEMPLATES = ROOT / "templates"
@@ -118,12 +122,20 @@ class ProductBoundaryTests(unittest.TestCase):
             english,
             [
                 "Remote Agent Collaboration Lite",
+                "lightweight collaboration layer for human + AI coding teams",
+                "What It Is",
+                "Why Use It",
+                "Works With",
+                "30-Second Quick Start",
+                "Choose Your Mode",
+                "Example Flow",
                 "No server, no database, no hooks, and no custom collaboration CLI.",
                 "Just Markdown files and optional Git.",
                 "Workspace Topology",
                 "Workflow Options",
                 "Remote Git Mode (Beta)",
                 "Codex and Claude compatibility",
+                "Claude Code Adapter",
                 "It does not try to enforce permissions.",
                 "soft locks",
                 "team-lead-collaboration",
@@ -136,6 +148,13 @@ class ProductBoundaryTests(unittest.TestCase):
             chinese,
             [
                 "Remote Agent Collaboration Lite",
+                "人类 + AI 编码团队",
+                "它是什么",
+                "为什么使用",
+                "兼容矩阵",
+                "30 秒快速开始",
+                "选择协作模式",
+                "冲突示例",
                 "hooks",
                 "Markdown",
                 "Workspace Topology",
@@ -336,8 +355,7 @@ class SkillContractTests(unittest.TestCase):
 
     def test_soft_lock_shape_is_consistent_across_docs_skills_and_template(self) -> None:
         paths = [
-            README,
-            README_ZH,
+            PROTOCOL_REFERENCE,
             LEAD_SKILL,
             MEMBER_SKILL,
             TEMPLATES / "COLLAB_LOG.md",
@@ -357,7 +375,7 @@ class SkillContractTests(unittest.TestCase):
             "Do not remove another actor's stale lock without user or Lead confirmation.",
             "double-check Active Work Locks after writing your own lock",
         ]
-        for path in [README, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
+        for path in [README, PROTOCOL_REFERENCE, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
                 assert_contains_all(self, read(path), required)
 
@@ -372,7 +390,7 @@ class SkillContractTests(unittest.TestCase):
             "`Last seen` updates when the actor starts work, acquires a lock, refreshes a lock, pauses, resumes, releases, changes task status, creates a handoff, or responds to a handoff.",
             "`Current scope` updates when the actor acquires, pauses, resumes, or releases a lock, or when assigned task scope changes.",
         ]
-        for path in [README, README_ZH, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
+        for path in [PROTOCOL_REFERENCE, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
                 assert_contains_all(self, read(path), required)
 
@@ -390,7 +408,7 @@ class SkillContractTests(unittest.TestCase):
             "Reject `..` path segments.",
             "Scopes overlap when any canonical path is equal, parent/child, or shares a declared module/interface boundary.",
         ]
-        for path in [README, README_ZH, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
+        for path in [PROTOCOL_REFERENCE, LEAD_SKILL, MEMBER_SKILL, TEMPLATES / "AGENTS.md"]:
             with self.subTest(path=path.relative_to(ROOT).as_posix()):
                 assert_contains_all(self, read(path), required)
 
@@ -768,12 +786,38 @@ class ExampleConsistencyTests(unittest.TestCase):
 
 
 class InstallDocsTests(unittest.TestCase):
-    def test_readme_has_tested_sixty_second_install_without_codex_marketplace_claims(self) -> None:
+    def test_readme_has_mature_homepage_and_quick_start(self) -> None:
         text = read(README)
         assert_contains_all(
             self,
             text,
             [
+                '<p align="center">',
+                "Lightweight collaboration layer for human + AI coding teams.",
+                "Coordinate Lead and Member agents in one repo",
+                "Codex Plugin first-class support",
+                "Claude Code supported through adapter",
+                "Generic agents compatible through shared instructions",
+                "Status: Beta",
+                "Plugin: v0.5.0",
+                "Claude Code Adapter",
+                "## Works With",
+                "| Codex | First-class | Plugin |",
+                "| Claude Code | Supported | Claude adapter |",
+                "| Generic AI agents | Compatible | Copy-paste prompts / shared instructions |",
+                "| Human contributors | Supported | Shared collaboration files |",
+                "## 30-Second Quick Start",
+                "codex plugin marketplace add Gary06868/remote-agent-collaboration-skills",
+                "Claude Code users: start with the [Claude Code adapter](adapters/claude-code/).",
+                "## Choose Your Mode",
+                "Shared Workspace Mode",
+                "Remote Git Mode (Beta)",
+                "Casual Coordination Mode",
+                "Task Assignment Mode",
+                "Module Ownership Mode",
+                "## Example Flow: Soft Lock Conflict",
+                "Member A claims `README.md`",
+                "Member B detects the overlap and stops before editing business files",
                 "## Install",
                 "### Option 1 - Codex Plugin (preferred)",
                 "Adding the marketplace does not install the Plugin.",
@@ -786,6 +830,8 @@ class InstallDocsTests(unittest.TestCase):
             ],
         )
         self.assertNotIn("```powershell\ncodex plugin add", text)
+        self.assertNotIn("## Actor Status Semantics", text)
+        self.assertNotIn("## Scope Canonicalization", text)
 
     def test_chinese_readme_has_matching_agent_install_section(self) -> None:
         text = read(README_ZH)
@@ -793,8 +839,33 @@ class InstallDocsTests(unittest.TestCase):
             self,
             text,
             [
+                "轻量协作层，服务人类 + AI 编码团队。",
+                "在同一个仓库里协调 Lead 和 Member agent",
+                "Codex Plugin 是一等支持",
+                "Claude Code 通过 adapter 支持",
+                "通用 Agent 可通过共享指令兼容",
+                "Status: Beta",
+                "Plugin: v0.5.0",
+                "Claude Code Adapter",
+                "## 兼容矩阵",
+                "| Codex | 一等支持 | Plugin |",
+                "| Claude Code | 支持 | Claude adapter |",
+                "| 通用 AI agents | 兼容 | 复制 prompt / 共享指令 |",
+                "| 人类贡献者 | 支持 | 共享协作文件 |",
+                "## 30 秒快速开始",
+                "codex plugin marketplace add Gary06868/remote-agent-collaboration-skills",
+                "Claude Code 用户：从 [Claude Code adapter](adapters/claude-code/) 开始。",
+                "## 选择协作模式",
+                "Shared Workspace Mode",
+                "Remote Git Mode (Beta)",
+                "Casual Coordination Mode",
+                "Task Assignment Mode",
+                "Module Ownership Mode",
+                "## 冲突示例：Soft Lock 的价值",
+                "Member A 声明 `README.md`",
+                "Member B 检测到 scope overlap，停止业务文件修改",
                 "## Install",
-                "### Option 1 - Codex Plugin",
+                "### Option 1 - Codex Plugin（首选）",
                 "添加 marketplace 不等于已经安装 Plugin。",
                 "打开 `/plugins`",
                 "### Option 3 - Manual Copy",
@@ -804,12 +875,95 @@ class InstallDocsTests(unittest.TestCase):
                 "同时安装两个 Skill。每个 thread 只使用一个角色。",
             ],
         )
+        self.assertNotIn("## Actor Status Semantics", text)
+        self.assertNotIn("## Scope Canonicalization", text)
 
-    def test_readme_uses_mermaid_instead_of_heavy_hero_asset(self) -> None:
+    def test_readme_uses_provided_visual_assets_without_video_demo(self) -> None:
         text = read(README)
-        self.assertIn("```mermaid", text)
-        self.assertNotIn("hero.svg", text)
+        assets = [
+            "remote-agent-collaboration-hero.png",
+            "remote-agent-collaboration-demo.png",
+            "remote-agent-collaboration-architecture.png",
+        ]
+        for asset in assets:
+            with self.subTest(asset=asset):
+                self.assertIn(f"docs/assets/{asset}", text)
+                self.assertTrue((DOC_ASSETS / asset).exists())
+                self.assertTrue((DOC_ASSETS / asset).read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertIn('alt="Remote Agent Collaboration Lite product banner"', text)
+        self.assertIn("![Codex initialization demo showing collaboration files created]", text)
+        self.assertIn("![Architecture diagram showing Lead and Member threads coordinating through collaboration files]", text)
         self.assertNotIn("demo.gif", text)
+        self.assertNotIn("video demo", text.lower())
+
+    def test_claude_code_adapter_is_documented_without_native_plugin_claims(self) -> None:
+        expected_files = [
+            "README.md",
+            "CLAUDE.md",
+            "lead-prompt.md",
+            "member-prompt.md",
+        ]
+        for name in expected_files:
+            with self.subTest(file=name):
+                self.assertTrue((CLAUDE_ADAPTER / name).exists())
+
+        readme = read(CLAUDE_ADAPTER / "README.md")
+        assert_contains_all(
+            self,
+            readme,
+            [
+                "Claude Code adapter",
+                "not a native Claude plugin",
+                "Lead thread",
+                "Member thread",
+                "AGENTS.md",
+                "COLLAB_LOG.md",
+                "TEAM_TASKS.md",
+                "MODULE_OWNERSHIP.md",
+                ".collab/",
+            ],
+        )
+        self.assertNotIn("native Claude plugin", readme.replace("not a native Claude plugin", ""))
+
+        claude_rules = read(CLAUDE_ADAPTER / "CLAUDE.md")
+        assert_contains_all(
+            self,
+            claude_rules,
+            [
+                "Remote Agent Collaboration Lite",
+                "Each Claude thread must use exactly one collaboration role: Lead or Member.",
+                "Before work, read `AGENTS.md` and `COLLAB_LOG.md`.",
+                "Before broad edits, check soft locks.",
+                "Do not claim hard locks, permission control, or automatic conflict prevention.",
+            ],
+        )
+
+        lead_prompt = read(CLAUDE_ADAPTER / "lead-prompt.md")
+        assert_contains_all(
+            self,
+            lead_prompt,
+            [
+                "Confirm actor identity",
+                "Choose Shared Workspace Mode or Remote Git Mode",
+                "Ask whether to enable Task Assignment Mode",
+                "Ask whether to enable Module Ownership Mode",
+                "Output one startup prompt for each Member",
+            ],
+        )
+
+        member_prompt = read(CLAUDE_ADAPTER / "member-prompt.md")
+        assert_contains_all(
+            self,
+            member_prompt,
+            [
+                "Read `AGENTS.md` and `COLLAB_LOG.md`",
+                "Confirm actor identity",
+                "Check soft locks",
+                "Declare your scope",
+                "Write back an update or handoff",
+                "Release or update the lock",
+            ],
+        )
 
 
 class E2EReportTests(unittest.TestCase):
