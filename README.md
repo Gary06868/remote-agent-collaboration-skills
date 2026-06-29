@@ -7,6 +7,8 @@ Remote Agent Collaboration Lite gives your small team two Markdown Skills, Lead 
 No server, no database, no hooks, and no custom collaboration CLI.
 Just Markdown files and optional Git.
 
+If this helps your AI coding workflow, a GitHub star helps others discover it.
+
 Install both Skills. Use one role per thread.
 
 - `team-lead-collaboration`

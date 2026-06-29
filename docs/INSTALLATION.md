@@ -122,4 +122,10 @@ After any install path:
 
 Plugin uninstall or marketplace removal must not delete collaboration files from a project: `AGENTS.md`, `COLLAB_LOG.md`, `TEAM_TASKS.md`, `MODULE_OWNERSHIP.md`, or `.collab/`.
 
+If the Plugin helps your AI coding workflow, please star the repository so more users can discover it:
+
+```text
+https://github.com/Gary06868/remote-agent-collaboration-skills
+```
+
 See the live verification notes in [tests/plugin-install/README.md](../tests/plugin-install/README.md).

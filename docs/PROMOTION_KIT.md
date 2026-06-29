@@ -36,6 +36,12 @@ or:
 $team-member-collaboration
 ```
 
+Support line:
+
+```text
+If this helps your AI coding workflow, a GitHub star helps others discover it.
+```
+
 ## Demo Script
 
 Use this for a 60-90 second screen recording.
@@ -83,6 +89,8 @@ codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
 Then open /plugins and install Remote Agent Collaboration Lite.
 
 I am looking for feedback from people running multiple Codex, Claude, Cursor, or other AI coding threads against the same repo.
+
+If the idea is useful, starring the repo helps more AI coding users find it.
 ```
 
 ## Product Hunt
@@ -113,6 +121,8 @@ I built this after repeatedly seeing AI coding work spread across scattered chat
 Lite Collab keeps the protocol deliberately small: one Lead Skill, one Member Skill, and Markdown files that agents can read before editing. The v0.5.0 release adds Codex Plugin packaging, so both Skills install together while staying independently visible.
 
 The main thing I want feedback on: how small can the coordination layer stay before teams really need a server or hard lock service?
+
+If the project is useful, a GitHub star helps more AI coding users discover it.
 ```
 
 Gallery asset checklist:
@@ -133,6 +143,8 @@ It is a Codex Plugin that installs Lead/Member Skills for coordinating multiple 
 No server. No database. No hooks. No custom collaboration CLI.
 
 https://github.com/Gary06868/remote-agent-collaboration-skills
+
+If this helps your AI coding workflow, a GitHub star helps others discover it.
 ```
 
 Developer-focused post:
@@ -150,6 +162,8 @@ Remote Agent Collaboration Lite v0.5.0 gives them:
 
 Install:
 codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
+
+If this helps your AI coding workflow, a GitHub star helps others discover it.
 ```
 
 ## Community Reply Template
@@ -162,6 +176,8 @@ This is the exact problem Lite Collab tries to keep small: agents need a shared 
 The approach is Markdown-only: Lead/Member Skills, actor identity, soft locks, current snapshot, and handoffs. It will not enforce permissions, but it makes well-instructed agents stop before conflicting edits.
 
 Repo: https://github.com/Gary06868/remote-agent-collaboration-skills
+
+If this helps your AI coding workflow, a GitHub star helps others discover it.
 ```
 
 ## Manual Launch Checklist
