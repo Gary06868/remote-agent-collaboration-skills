@@ -80,15 +80,15 @@ Resolved in the current Lite protocol:
 - Default member completion in task mode is `READY_FOR_REVIEW` unless `AGENTS.md`, the Lead, or the user says direct `DONE` is acceptable.
 - Scope-overlap guidance now names common overlap cases: same path, same folder/module, broad module locks, and shared interfaces.
 - QA reject follow-up fixes are covered: the privacy scanner no longer treats diagnostic labels as Windows drive paths, public tests do not embed reconstructible private source terms, Actor Registry status semantics are defined, and multi-path scope canonicalization is canonical.
-- 0.5.0 Plugin distribution keeps Lite Markdown-only: one Plugin bundles the Lead and Member Skills, the Plugin has no hooks/MCP/custom CLI/service surface, README distinguishes marketplace add from Plugin install, and manual copy uses `.agents/skills`.
+- 0.6.0 release preparation keeps Lite Markdown-only while adding the Claude Code adapter, README homepage restructure, compatibility matrix, quick start, visual assets, and Plugin screenshots. It keeps the original Plugin icon/cover, does not add a video demo, does not claim native Claude plugin support, and adds no hooks/MCP/custom CLI/server/database/daemon/runtime permission surface.
 
 ## Execution Log
 
-- Status: executed on the Codex Plugin distribution branch.
+- Status: executed for v0.6.0 release preparation on `main`.
 - Commands:
   - `python -m unittest discover -s tests -v`
-  - `.venv\Scripts\python.exe -m pytest -q`
+  - `pytest tests -q`
 - Result:
-  - `python -m unittest discover -s tests -v`: PASS, 71 tests.
-  - `.venv\Scripts\python.exe -m pytest -q`: PASS, 71 tests and 484 subtests.
-- Notes: Current suite covers actor identity, Actor Registry status semantics, scope canonicalization, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, plugin packaging, repository marketplace metadata, archive contents, link checks, CI workflow, privacy scan, and BOM scan.
+  - `python -m unittest discover -s tests -v`: PASS, 74 tests.
+  - `pytest tests -q`: PASS, 74 tests and 545 subtests.
+- Notes: `pytest` was not on the initial shell PATH on this Windows machine; `.venv\Scripts` was prepended to PATH before rerunning `pytest tests -q`. Current suite covers actor identity, Actor Registry status semantics, scope canonicalization, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, plugin packaging, repository marketplace metadata, archive contents, link checks, CI workflow, privacy scan, BOM scan, Claude Code adapter docs, README visual assets, and Plugin screenshots.

@@ -2,7 +2,7 @@
 
 Test date: 2026-06-25
 Codex version: `codex-cli 0.130.0-alpha.5`
-Product version: `0.5.0`
+Product version: `0.6.0`
 
 This audit records the distribution decisions for Remote Agent Collaboration Lite. The product remains Markdown Skills plus Markdown templates. Plugin is packaging only.
 

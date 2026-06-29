@@ -16,8 +16,8 @@ Codex Plugin 是一等支持 · Claude Code 通过 adapter 支持 · 通用 Agen
 
 <p align="center">
   <img alt="Status: Beta" src="https://img.shields.io/badge/Status-Beta-7c3aed">
-  <img alt="Plugin: v0.5.0" src="https://img.shields.io/badge/Plugin-v0.5.0-2563eb">
-  <img alt="Build: Passing" src="https://img.shields.io/badge/Build-Passing-16a34a">
+  <img alt="Plugin: v0.6.0" src="https://img.shields.io/badge/Plugin-v0.6.0-2563eb">
+  <img alt="Tests" src="https://github.com/Gary06868/remote-agent-collaboration-skills/actions/workflows/tests.yml/badge.svg">
   <img alt="Codex" src="https://img.shields.io/badge/Codex-Plugin-111827">
   <img alt="Claude Code Adapter" src="https://img.shields.io/badge/Claude%20Code-Adapter-f97316">
   <img alt="Docs" src="https://img.shields.io/badge/Docs-Ready-0f766e">
@@ -129,7 +129,7 @@ tiny-team 示例展示了软锁的实际价值：
 Plugin name: `remote-agent-collaboration-lite`
 Plugin display name: `Remote Agent Collaboration Lite`
 Marketplace name: `remote-agent-collaboration-lite`
-Version: `0.5.0`
+Version: `0.6.0`
 
 添加这个仓库 marketplace：
 
@@ -232,7 +232,7 @@ Requirements:
   or:
   $team-member-collaboration
 - Do not activate the other role in the same thread.
-- Report Plugin version 0.5.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
+- Report Plugin version 0.6.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
 ```
 
 ## 核心文件
@@ -267,6 +267,6 @@ Requirements:
 - 通用 Agent 兼容意味着共享指令可读，不代表每个 Agent 环境都有原生集成。
 - 它有意不是 server、database、custom collaboration CLI、hook system、MCP server、daemon 或企业权限系统。
 
-Current Lite protocol version: `0.5.0`.
+Current Lite protocol version: `0.6.0`.
 
 Advanced local protocol experiments are preserved on the `standard-local-protocol` branch.

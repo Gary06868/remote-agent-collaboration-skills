@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0
+
+- Added the Claude Code adapter with project rules plus Lead and Member startup prompts.
+- Reworked the README homepage around a stronger hero, compatibility matrix, 30-second quick start, mode selection table, and soft-lock conflict example.
+- Added visual assets for the README and Plugin screenshots while keeping the original Plugin cover and icon.
+- Switched the README build status from a static badge to the GitHub Actions workflow badge.
+- Kept the release intentionally lightweight: no video demo, no server, no database, no hooks, no custom collaboration CLI, no MCP server, no daemon, and no runtime permission system.
+- Documented Claude Code as adapter-based support and avoided claiming a native Claude plugin.
+
 ## 0.5.0
 
 - Added Codex Plugin packaging for the Lite product.

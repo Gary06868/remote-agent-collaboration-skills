@@ -16,8 +16,8 @@ Codex Plugin first-class support | Claude Code supported through adapter | Gener
 
 <p align="center">
   <img alt="Status: Beta" src="https://img.shields.io/badge/Status-Beta-7c3aed">
-  <img alt="Plugin: v0.5.0" src="https://img.shields.io/badge/Plugin-v0.5.0-2563eb">
-  <img alt="Build: Passing" src="https://img.shields.io/badge/Build-Passing-16a34a">
+  <img alt="Plugin: v0.6.0" src="https://img.shields.io/badge/Plugin-v0.6.0-2563eb">
+  <img alt="Tests" src="https://github.com/Gary06868/remote-agent-collaboration-skills/actions/workflows/tests.yml/badge.svg">
   <img alt="Codex" src="https://img.shields.io/badge/Codex-Plugin-111827">
   <img alt="Claude Code Adapter" src="https://img.shields.io/badge/Claude%20Code-Adapter-f97316">
   <img alt="Docs" src="https://img.shields.io/badge/Docs-Ready-0f766e">
@@ -133,7 +133,7 @@ See [`examples/tiny-team-project`](examples/tiny-team-project/) for the full sam
 Plugin name: `remote-agent-collaboration-lite`
 Plugin display name: `Remote Agent Collaboration Lite`
 Marketplace name: `remote-agent-collaboration-lite`
-Version: `0.5.0`
+Version: `0.6.0`
 
 Add this repository marketplace:
 
@@ -236,7 +236,7 @@ Requirements:
   or:
   $team-member-collaboration
 - Do not activate the other role in the same thread.
-- Report Plugin version 0.5.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
+- Report Plugin version 0.6.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
 ```
 
 ## Core Files
@@ -271,6 +271,6 @@ Templates are available in [`templates/`](templates/). The Lead Skill also carri
 - Generic agent support means compatible shared instructions, not native integration for every environment.
 - It is intentionally not a server, database, custom collaboration CLI, hook system, MCP server, daemon, or enterprise permission model.
 
-Current Lite protocol version: `0.5.0`.
+Current Lite protocol version: `0.6.0`.
 
 Advanced local protocol experiments are preserved on the `standard-local-protocol` branch.

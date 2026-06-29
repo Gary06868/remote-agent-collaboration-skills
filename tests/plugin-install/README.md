@@ -5,7 +5,7 @@ Codex version: `codex-cli 0.130.0-alpha.5`
 Operating system: Windows
 Plugin name: `remote-agent-collaboration-lite`
 Plugin display name: `Remote Agent Collaboration Lite`
-Plugin version: `0.5.0`
+Plugin version: `0.6.0`
 Marketplace name: `remote-agent-collaboration-lite`
 
 This report is sanitized. It does not include tokens, private local paths, temporary absolute paths, screenshots, or user configuration contents.

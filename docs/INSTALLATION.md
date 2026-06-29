@@ -11,7 +11,7 @@ The product remains Markdown-only. Installing the Plugin does not install hooks,
 
 Plugin name: `remote-agent-collaboration-lite`
 Marketplace name: `remote-agent-collaboration-lite`
-Version: `0.5.0`
+Version: `0.6.0`
 
 Add the repository marketplace:
 

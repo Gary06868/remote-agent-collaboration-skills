@@ -12,7 +12,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 PLUGIN_NAME = "remote-agent-collaboration-lite"
 MARKETPLACE_NAME = "remote-agent-collaboration-lite"
 PLUGIN_ROOT = ROOT / "plugins" / PLUGIN_NAME
