@@ -166,6 +166,8 @@ codex plugin marketplace remove remote-agent-collaboration-lite
 
 ### Option 2 - Claude Code Plugin
 
+![Claude Code 添加 marketplace、安装 remote-agent-collaboration-lite，并调用 team-lead-collaboration 与 team-member-collaboration 两个 Skill](docs/assets/claude-code-quickstart.gif)
+
 Plugin name: `remote-agent-collaboration-lite`
 Marketplace name: `remote-agent-collaboration-skills`
 Version: `0.7.0`

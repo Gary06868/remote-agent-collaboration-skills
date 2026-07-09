@@ -170,6 +170,8 @@ Uninstalling or disabling the Plugin must not delete project collaboration files
 
 ### Option 2 - Claude Code Plugin
 
+![Claude Code adding the marketplace, installing remote-agent-collaboration-lite, and invoking the team-lead-collaboration and team-member-collaboration skills](docs/assets/claude-code-quickstart.gif)
+
 Plugin name: `remote-agent-collaboration-lite`
 Marketplace name: `remote-agent-collaboration-skills`
 Version: `0.7.0`

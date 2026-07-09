@@ -146,6 +146,26 @@ class ClaudeInstallDocsTests(unittest.TestCase):
         )
 
 
+class ClaudeQuickStartAssetTests(unittest.TestCase):
+    GIF_REL = "docs/assets/claude-code-quickstart.gif"
+
+    def test_quickstart_gif_exists_and_is_a_valid_gif(self) -> None:
+        gif = ROOT / self.GIF_REL
+        self.assertTrue(gif.exists())
+        head = gif.read_bytes()[:6]
+        self.assertIn(head, (b"GIF87a", b"GIF89a"))
+        self.assertLess(gif.stat().st_size, 3_000_000)
+
+    def test_readmes_reference_the_quickstart_gif(self) -> None:
+        for path in [README, README_ZH]:
+            with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                text = read(path)
+                self.assertIn(f"]({self.GIF_REL})", text)
+                # The test suite forbids a `demo.gif` asset name and "video demo" copy.
+                self.assertNotIn("demo.gif", text)
+                self.assertNotIn("video demo", text.lower())
+
+
 class ClaudeDistributionFileHygieneTests(unittest.TestCase):
     def test_claude_distribution_files_are_utf8_without_bom(self) -> None:
         for path in [CLAUDE_MANIFEST, CLAUDE_MARKETPLACE]:
