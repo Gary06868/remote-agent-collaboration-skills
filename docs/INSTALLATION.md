@@ -1,17 +1,17 @@
 # Installation
 
-Remote Agent Collaboration Lite is distributed as one Codex Plugin that bundles two independent Skills:
+Remote Agent Collaboration Lite is distributed as a Codex Plugin and a native Claude Code plugin. Each bundles the same two independent Skills:
 
 - `team-lead-collaboration`
 - `team-member-collaboration`
 
-The product remains Markdown-only. Installing the Plugin does not install hooks, a custom collaboration CLI, a background service, a database, or a runtime permission system.
+The product remains Markdown-only. Installing either Plugin does not install hooks, a custom collaboration CLI, a background service, a database, or a runtime permission system.
 
 ## Option 1 - Codex Plugin
 
 Plugin name: `remote-agent-collaboration-lite`
 Marketplace name: `remote-agent-collaboration-lite`
-Version: `0.6.0`
+Version: `0.7.0`
 
 Add the repository marketplace:
 
@@ -46,13 +46,31 @@ Remove the marketplace entry:
 codex plugin marketplace remove remote-agent-collaboration-lite
 ```
 
-## Option 2 - Built-in Skill Installer
+## Option 2 - Claude Code Plugin
 
-`$skill-installer` may be useful for local experiments, but it is not documented here as a supported installation path for this repository because this release did not verify that it installs both Skill directories and the Lead `references/` folder in one reliable flow.
+Plugin name: `remote-agent-collaboration-lite`
+Marketplace name: `remote-agent-collaboration-skills`
+Version: `0.7.0`
+
+Claude Code installs the same two Skills as a native plugin. Both Skills become slash commands. In an interactive Claude Code session:
+
+```text
+/plugin marketplace add Gary06868/remote-agent-collaboration-skills
+/plugin install remote-agent-collaboration-lite@remote-agent-collaboration-skills
+```
+
+Then start a fresh conversation and confirm both Skills are available:
+
+- `/team-lead-collaboration`
+- `/team-member-collaboration`
+
+Update later with `/plugin update remote-agent-collaboration-lite@remote-agent-collaboration-skills` and remove with `/plugin uninstall remote-agent-collaboration-lite@remote-agent-collaboration-skills`.
+
+The [Claude Code adapter](../adapters/claude-code/) stays available as a no-install fallback for environments that cannot use the marketplace.
 
 ## Option 3 - Manual Copy
 
-Use manual copy only for development or fallback. Current Codex Skills documentation describes `.agents/skills` as the user and repository Skill discovery path.
+Use manual copy only for development or fallback. Some environments also expose a built-in `$skill-installer`; where it exists you may use it, but this repository does not treat it as the primary verified path. Current Codex Skills documentation describes `.agents/skills` as the user and repository Skill discovery path.
 
 ### User-Level Install
 
@@ -116,8 +134,8 @@ After any install path:
 2. Confirm both Skill names are visible:
    - `team-lead-collaboration`
    - `team-member-collaboration`
-3. In a Lead thread, explicitly call `$team-lead-collaboration`.
-4. In a separate Member thread, explicitly call `$team-member-collaboration`.
+3. In a Lead thread, explicitly call `$team-lead-collaboration` (Codex) or `/team-lead-collaboration` (Claude Code).
+4. In a separate Member thread, explicitly call `$team-member-collaboration` (Codex) or `/team-member-collaboration` (Claude Code).
 5. Do not activate both roles in one thread.
 
 Plugin uninstall or marketplace removal must not delete collaboration files from a project: `AGENTS.md`, `COLLAB_LOG.md`, `TEAM_TASKS.md`, `MODULE_OWNERSHIP.md`, or `.collab/`.

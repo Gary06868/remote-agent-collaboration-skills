@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+- Added a native Claude Code plugin so Claude Code users install the same two Skills without the manual adapter copy step.
+- Added a Claude Code marketplace at `.claude-plugin/marketplace.json` and a plugin manifest at `plugins/remote-agent-collaboration-lite/.claude-plugin/plugin.json`, reusing the existing bundled Skills and assets.
+- Both Skills now appear in Claude Code as the `/team-lead-collaboration` and `/team-member-collaboration` slash commands.
+- Promoted Claude Code to first-class support in the README compatibility matrix, quick start, and install section, while keeping the `adapters/claude-code/` prompts as a no-install fallback.
+- Kept the release lightweight: the Claude plugin ships packaging only, with no hooks, MCP server, custom collaboration CLI, server, database, or daemon.
+- Bumped the distribution version to 0.7.0 across the Codex and Claude manifests, README badges, and docs.
+
 ## 0.6.0
 
 - Added the Claude Code adapter with project rules plus Lead and Member startup prompts.

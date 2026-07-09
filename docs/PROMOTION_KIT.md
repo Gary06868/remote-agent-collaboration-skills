@@ -1,6 +1,6 @@
 # Promotion Kit
 
-This kit is for launching Remote Agent Collaboration Lite v0.6.0.
+This kit is for launching Remote Agent Collaboration Lite v0.7.0.
 
 ## Positioning
 
@@ -44,7 +44,7 @@ If this helps your AI coding workflow, a GitHub star helps others discover it.
 
 ## Future Demo Script
 
-No video demo ships with v0.6.0. Use this later if a 60-90 second screen recording is produced.
+No video demo ships with v0.7.0. Use this later if a 60-90 second screen recording is produced.
 
 1. Show the problem: two AI coding threads are about to edit the same repository.
 2. Open the README and show that the Plugin installs two visible Skills.
@@ -118,7 +118,7 @@ First comment:
 ```text
 I built this after repeatedly seeing AI coding work spread across scattered chats, stale task notes, and duplicate edits.
 
-Lite Collab keeps the protocol deliberately small: one Lead Skill, one Member Skill, Claude Code adapter prompts, and Markdown files that agents can read before editing. The v0.6.0 release improves the homepage, compatibility matrix, quick start, visual assets, and Plugin screenshots while keeping both Skills independently visible.
+Lite Collab keeps the protocol deliberately small: one Lead Skill, one Member Skill, a native Claude Code plugin plus Codex plugin, and Markdown files that agents can read before editing. The v0.7.0 release adds native Claude Code plugin distribution so the two Skills install as `/team-lead-collaboration` and `/team-member-collaboration`, while keeping both Skills independently visible.
 
 The main thing I want feedback on: how small can the coordination layer stay before teams really need a server or hard lock service?
 
@@ -136,9 +136,9 @@ Gallery asset checklist:
 Short post:
 
 ```text
-Released Remote Agent Collaboration Lite v0.6.0.
+Released Remote Agent Collaboration Lite v0.7.0.
 
-It is a Codex Plugin that installs Lead/Member Skills for coordinating multiple human and AI coding agents through Markdown soft locks, actor identity, and handoffs. Claude Code is supported through an adapter, not a native Claude plugin.
+It is a Codex Plugin and a native Claude Code plugin that install Lead/Member Skills for coordinating multiple human and AI coding agents through Markdown soft locks, actor identity, and handoffs. Claude Code users get `/team-lead-collaboration` and `/team-member-collaboration` from the marketplace.
 
 No server. No database. No hooks. No custom collaboration CLI. No video demo in this release.
 
@@ -152,9 +152,9 @@ Developer-focused post:
 ```text
 When several AI coding agents work in one repo, chat history is not enough.
 
-Remote Agent Collaboration Lite v0.6.0 gives them:
+Remote Agent Collaboration Lite v0.7.0 gives them:
 - Lead and Member Skills
-- Claude Code adapter prompts
+- native Codex and Claude Code plugins (`/team-lead-collaboration`, `/team-member-collaboration`)
 - AGENTS.md and COLLAB_LOG.md
 - actor identity
 - soft locks
