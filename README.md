@@ -11,15 +11,15 @@ Coordinate Lead and Member agents in one repo, reduce duplicate edits, coordinat
 </p>
 
 <p align="center">
-Codex Plugin first-class support | Claude Code supported through adapter | Generic agents compatible through shared instructions.
+Codex Plugin first-class support | Claude Code plugin support | Generic agents compatible through shared instructions.
 </p>
 
 <p align="center">
   <img alt="Status: Beta" src="https://img.shields.io/badge/Status-Beta-7c3aed">
-  <img alt="Plugin: v0.6.0" src="https://img.shields.io/badge/Plugin-v0.6.0-2563eb">
+  <img alt="Plugin: v0.7.0" src="https://img.shields.io/badge/Plugin-v0.7.0-2563eb">
   <img alt="Tests" src="https://github.com/Gary06868/remote-agent-collaboration-skills/actions/workflows/tests.yml/badge.svg">
   <img alt="Codex" src="https://img.shields.io/badge/Codex-Plugin-111827">
-  <img alt="Claude Code Adapter" src="https://img.shields.io/badge/Claude%20Code-Adapter-f97316">
+  <img alt="Claude Code Plugin" src="https://img.shields.io/badge/Claude%20Code-Plugin-f97316">
   <img alt="Docs" src="https://img.shields.io/badge/Docs-Ready-0f766e">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-374151">
 </p>
@@ -67,11 +67,11 @@ The practical value is simple: fewer duplicate edits, fewer stale chat-only deci
 | Agent / Environment | Support Level | Recommended Path |
 | --- | --- | --- |
 | Codex | First-class | Plugin |
-| Claude Code | Supported | Claude adapter |
+| Claude Code | First-class | Plugin |
 | Generic AI agents | Compatible | Copy-paste prompts / shared instructions |
 | Human contributors | Supported | Shared collaboration files |
 
-Codex and Claude compatibility is explicit, but not identical. Codex uses the bundled Plugin and Skills. Claude Code uses the [Claude Code adapter](adapters/claude-code/) and shared project instructions. Generic agents can follow the same Markdown instructions, but this project does not claim native support for every agent environment.
+Codex and Claude compatibility is explicit and now symmetric. Codex uses the bundled Codex Plugin. Claude Code installs the same two Skills through a native Claude Code plugin from this repository's marketplace, so both Skills appear as `/team-lead-collaboration` and `/team-member-collaboration`. The [Claude Code adapter](adapters/claude-code/) remains as a no-install fallback for existing setups. Generic agents can follow the same Markdown instructions, but this project does not claim native support for every agent environment.
 
 ## 30-Second Quick Start
 
@@ -93,7 +93,7 @@ codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
    $team-member-collaboration Work on my assigned scope and update the shared collaboration log.
    ```
 
-5. Claude Code users: start with the [Claude Code adapter](adapters/claude-code/).
+5. Claude Code users: install the native plugin, then use `/team-lead-collaboration` or `/team-member-collaboration`. See [Install](#install).
 
 ![Codex initialization demo showing collaboration files created](docs/assets/remote-agent-collaboration-demo.png)
 
@@ -133,7 +133,7 @@ See [`examples/tiny-team-project`](examples/tiny-team-project/) for the full sam
 Plugin name: `remote-agent-collaboration-lite`
 Plugin display name: `Remote Agent Collaboration Lite`
 Marketplace name: `remote-agent-collaboration-lite`
-Version: `0.6.0`
+Version: `0.7.0`
 
 Add this repository marketplace:
 
@@ -168,13 +168,47 @@ codex plugin marketplace remove remote-agent-collaboration-lite
 
 Uninstalling or disabling the Plugin must not delete project collaboration files such as `AGENTS.md`, `COLLAB_LOG.md`, `TEAM_TASKS.md`, `MODULE_OWNERSHIP.md`, or `.collab/`.
 
-### Option 2 - Built-in Skill Installer
+### Option 2 - Claude Code Plugin
 
-The built-in `$skill-installer` is a fallback concept for environments that support it, but this repository does not publish it as the primary verified path. Use the Plugin path above, or the manual copy path below for development and recovery.
+Plugin name: `remote-agent-collaboration-lite`
+Marketplace name: `remote-agent-collaboration-skills`
+Version: `0.7.0`
+
+Claude Code installs the same two Skills as a native plugin. Both Skills become slash commands you can call directly. In an interactive Claude Code session:
+
+1. Add this repository as a marketplace:
+
+   ```text
+   /plugin marketplace add Gary06868/remote-agent-collaboration-skills
+   ```
+
+2. Install the plugin:
+
+   ```text
+   /plugin install remote-agent-collaboration-lite@remote-agent-collaboration-skills
+   ```
+
+3. Start a fresh Claude Code conversation.
+4. Verify both Skills are available as slash commands:
+   - `/team-lead-collaboration`
+   - `/team-member-collaboration`
+5. Use exactly one role per conversation:
+
+   ```text
+   /team-lead-collaboration Set up lightweight collaboration for this project.
+   ```
+
+   ```text
+   /team-member-collaboration Work on my assigned scope and update the shared collaboration log.
+   ```
+
+Update later with `/plugin update remote-agent-collaboration-lite@remote-agent-collaboration-skills`. Remove with `/plugin uninstall remote-agent-collaboration-lite@remote-agent-collaboration-skills`.
+
+Prefer the plugin. The [Claude Code adapter](adapters/claude-code/) stays available as a no-install fallback: copy `CLAUDE.md` into the project root and paste the Lead and Member prompts.
 
 ### Option 3 - Manual Copy
 
-Use this for development, local recovery, or environments without plugin support. Current Codex Skills documentation uses `.agents/skills` for repository and user-level Skill discovery.
+Use this for development, local recovery, or environments without plugin support. Some environments also expose a built-in `$skill-installer`; where it exists you may use it, but this repository does not treat it as the primary verified path. Current Codex Skills documentation uses `.agents/skills` for repository and user-level Skill discovery.
 
 Windows PowerShell from the repository root:
 
@@ -236,8 +270,10 @@ Requirements:
   or:
   $team-member-collaboration
 - Do not activate the other role in the same thread.
-- Report Plugin version 0.6.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
+- Report Plugin version 0.7.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
 ```
+
+Claude Code users install the same Plugin from this repository's Claude marketplace instead: `/plugin marketplace add Gary06868/remote-agent-collaboration-skills`, then `/plugin install remote-agent-collaboration-lite@remote-agent-collaboration-skills`. The two Skills then appear as `/team-lead-collaboration` and `/team-member-collaboration`.
 
 ## Core Files
 
@@ -267,10 +303,10 @@ Templates are available in [`templates/`](templates/). The Lead Skill also carri
 - It does not enforce OS-level permissions.
 - It does not prevent someone from ignoring the rules.
 - Git is optional in Shared Workspace Mode and required only when the team chooses Remote Git Mode (Beta).
-- Claude Code support is adapter-based support, not a native Claude plugin.
+- Claude Code support ships as a native Claude Code plugin, with the adapter prompts kept as a no-install fallback.
 - Generic agent support means compatible shared instructions, not native integration for every environment.
 - It is intentionally not a server, database, custom collaboration CLI, hook system, MCP server, daemon, or enterprise permission model.
 
-Current Lite protocol version: `0.6.0`.
+Current Lite protocol version: `0.7.0`.
 
 Advanced local protocol experiments are preserved on the `standard-local-protocol` branch.

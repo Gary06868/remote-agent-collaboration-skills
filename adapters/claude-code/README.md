@@ -2,6 +2,8 @@
 
 This is a Claude Code adapter for Remote Agent Collaboration Lite. It is not a native Claude plugin.
 
+> Prefer the plugin. Since v0.7.0 there is a native Claude Code plugin that installs the same Lead / Member Skills directly, so they appear as `/team-lead-collaboration` and `/team-member-collaboration`. Add it with `/plugin marketplace add Gary06868/remote-agent-collaboration-skills`, then `/plugin install remote-agent-collaboration-lite@remote-agent-collaboration-skills`. See the repository [Install](../../README.md#install) section. Use this adapter only when a project cannot use the plugin marketplace, for example when it prefers the rules pasted directly into an existing `CLAUDE.md`.
+
 Use this adapter when a project wants the same Lead / Member collaboration behavior in Claude Code that Codex gets through the Plugin. Claude Code reads project instructions and prompts; the collaboration state remains ordinary project files.
 
 ## Files Used

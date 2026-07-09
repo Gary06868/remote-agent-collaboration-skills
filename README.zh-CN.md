@@ -11,15 +11,15 @@
 </p>
 
 <p align="center">
-Codex Plugin 是一等支持 · Claude Code 通过 adapter 支持 · 通用 Agent 可通过共享指令兼容。
+Codex Plugin 是一等支持 · Claude Code 提供原生 plugin 支持 · 通用 Agent 可通过共享指令兼容。
 </p>
 
 <p align="center">
   <img alt="Status: Beta" src="https://img.shields.io/badge/Status-Beta-7c3aed">
-  <img alt="Plugin: v0.6.0" src="https://img.shields.io/badge/Plugin-v0.6.0-2563eb">
+  <img alt="Plugin: v0.7.0" src="https://img.shields.io/badge/Plugin-v0.7.0-2563eb">
   <img alt="Tests" src="https://github.com/Gary06868/remote-agent-collaboration-skills/actions/workflows/tests.yml/badge.svg">
   <img alt="Codex" src="https://img.shields.io/badge/Codex-Plugin-111827">
-  <img alt="Claude Code Adapter" src="https://img.shields.io/badge/Claude%20Code-Adapter-f97316">
+  <img alt="Claude Code Plugin" src="https://img.shields.io/badge/Claude%20Code-Plugin-f97316">
   <img alt="Docs" src="https://img.shields.io/badge/Docs-Ready-0f766e">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-374151">
 </p>
@@ -67,11 +67,11 @@ Remote Agent Collaboration Lite 是面向人类 + AI 编码团队的轻量协作
 | Agent / Environment | Support Level | Recommended Path |
 | --- | --- | --- |
 | Codex | 一等支持 | Plugin |
-| Claude Code | 支持 | Claude adapter |
+| Claude Code | 一等支持 | Plugin |
 | 通用 AI agents | 兼容 | 复制 prompt / 共享指令 |
 | 人类贡献者 | 支持 | 共享协作文件 |
 
-Codex and Claude compatibility 是明确支持，但路径不同。Codex 使用打包好的 Plugin 和 Skills。Claude Code 使用 [Claude Code adapter](adapters/claude-code/) 和项目规则文件。通用 Agent 可以阅读同样的 Markdown 指令，但本项目不会虚构每个 Agent 环境都有原生支持。
+Codex and Claude compatibility 是明确支持，现在两侧对称。Codex 使用打包好的 Codex Plugin。Claude Code 通过本仓库 marketplace 中的原生 Claude Code plugin 安装同样的两个 Skill，两个 Skill 会以 `/team-lead-collaboration` 和 `/team-member-collaboration` 出现。[Claude Code adapter](adapters/claude-code/) 作为无需安装的兜底继续保留。通用 Agent 可以阅读同样的 Markdown 指令，但本项目不会虚构每个 Agent 环境都有原生支持。
 
 ## 30 秒快速开始
 
@@ -93,7 +93,7 @@ codex plugin marketplace add Gary06868/remote-agent-collaboration-skills
    $team-member-collaboration Work on my assigned scope and update the shared collaboration log.
    ```
 
-5. Claude Code 用户：从 [Claude Code adapter](adapters/claude-code/) 开始。
+5. Claude Code 用户：安装原生 plugin，然后使用 `/team-lead-collaboration` 或 `/team-member-collaboration`。见 [Install](#install)。
 
 ![Codex initialization demo showing collaboration files created](docs/assets/remote-agent-collaboration-demo.png)
 
@@ -129,7 +129,7 @@ tiny-team 示例展示了软锁的实际价值：
 Plugin name: `remote-agent-collaboration-lite`
 Plugin display name: `Remote Agent Collaboration Lite`
 Marketplace name: `remote-agent-collaboration-lite`
-Version: `0.6.0`
+Version: `0.7.0`
 
 添加这个仓库 marketplace：
 
@@ -164,13 +164,47 @@ codex plugin marketplace remove remote-agent-collaboration-lite
 
 卸载或禁用 Plugin 不应删除项目里的 `AGENTS.md`、`COLLAB_LOG.md`、`TEAM_TASKS.md`、`MODULE_OWNERSHIP.md` 或 `.collab/`。
 
-### Option 2 - Built-in Skill Installer
+### Option 2 - Claude Code Plugin
 
-内置 `$skill-installer` 可以作为支持该能力环境下的兜底思路，但当前仓库不把它作为主要验证路径。优先使用上面的 Plugin；开发和恢复场景使用下面的手动复制。
+Plugin name: `remote-agent-collaboration-lite`
+Marketplace name: `remote-agent-collaboration-skills`
+Version: `0.7.0`
+
+Claude Code 以原生 plugin 安装同样的两个 Skill，两个 Skill 都会成为可直接调用的 slash command。在交互式 Claude Code 会话中：
+
+1. 添加本仓库作为 marketplace：
+
+   ```text
+   /plugin marketplace add Gary06868/remote-agent-collaboration-skills
+   ```
+
+2. 安装 plugin：
+
+   ```text
+   /plugin install remote-agent-collaboration-lite@remote-agent-collaboration-skills
+   ```
+
+3. 新建一个 Claude Code 会话。
+4. 验证两个 Skill 都可作为 slash command 使用：
+   - `/team-lead-collaboration`
+   - `/team-member-collaboration`
+5. 每个会话只使用一个角色：
+
+   ```text
+   /team-lead-collaboration Set up lightweight collaboration for this project.
+   ```
+
+   ```text
+   /team-member-collaboration Work on my assigned scope and update the shared collaboration log.
+   ```
+
+更新：`/plugin update remote-agent-collaboration-lite@remote-agent-collaboration-skills`。移除：`/plugin uninstall remote-agent-collaboration-lite@remote-agent-collaboration-skills`。
+
+优先使用 plugin。[Claude Code adapter](adapters/claude-code/) 作为无需安装的兜底继续保留：把 `CLAUDE.md` 复制到项目根目录，并粘贴 Lead 和 Member prompt。
 
 ### Option 3 - Manual Copy
 
-用于开发、本地恢复或不支持 Plugin 的环境。当前 Codex Skills 文档使用 `.agents/skills` 作为仓库级和用户级 Skill 扫描路径。
+用于开发、本地恢复或不支持 Plugin 的环境。部分环境还内置 `$skill-installer`；在支持时可以使用，但当前仓库不把它作为主要验证路径。当前 Codex Skills 文档使用 `.agents/skills` 作为仓库级和用户级 Skill 扫描路径。
 
 Windows PowerShell：
 
@@ -232,8 +266,10 @@ Requirements:
   or:
   $team-member-collaboration
 - Do not activate the other role in the same thread.
-- Report Plugin version 0.6.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
+- Report Plugin version 0.7.0, Plugin name remote-agent-collaboration-lite, marketplace name remote-agent-collaboration-lite, and both visible Skill names.
 ```
+
+Claude Code 用户改从本仓库的 Claude marketplace 安装同一个 Plugin：`/plugin marketplace add Gary06868/remote-agent-collaboration-skills`，然后 `/plugin install remote-agent-collaboration-lite@remote-agent-collaboration-skills`。两个 Skill 会以 `/team-lead-collaboration` 和 `/team-member-collaboration` 出现。
 
 ## 核心文件
 
@@ -263,10 +299,10 @@ Requirements:
 - 它不执行 OS 级权限控制。
 - 它无法阻止参与者忽略规则。
 - Git 在 Shared Workspace Mode 中是可选项，只有选择 Remote Git Mode (Beta) 时才需要作为同步机制。
-- Claude Code 是 adapter-based support，不是 native Claude plugin。
+- Claude Code 以原生 Claude Code plugin 形式提供支持，adapter prompt 作为无需安装的兜底保留。
 - 通用 Agent 兼容意味着共享指令可读，不代表每个 Agent 环境都有原生集成。
 - 它有意不是 server、database、custom collaboration CLI、hook system、MCP server、daemon 或企业权限系统。
 
-Current Lite protocol version: `0.6.0`.
+Current Lite protocol version: `0.7.0`.
 
 Advanced local protocol experiments are preserved on the `standard-local-protocol` branch.

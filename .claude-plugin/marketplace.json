@@ -1,0 +1,28 @@
+{
+  "name": "remote-agent-collaboration-skills",
+  "owner": {
+    "name": "Gary06868"
+  },
+  "description": "Claude Code marketplace for Remote Agent Collaboration Lite. Installs the team-lead-collaboration and team-member-collaboration skills.",
+  "plugins": [
+    {
+      "name": "remote-agent-collaboration-lite",
+      "source": "./plugins/remote-agent-collaboration-lite",
+      "description": "Markdown collaboration for small human and AI teams. Adds the /team-lead-collaboration and /team-member-collaboration skills.",
+      "version": "0.7.0",
+      "author": {
+        "name": "Gary06868"
+      },
+      "homepage": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+      "repository": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+      "license": "MIT",
+      "category": "Developer Tools",
+      "keywords": [
+        "collaboration",
+        "markdown",
+        "ai-agents",
+        "vibe-coding"
+      ]
+    }
+  ]
+}

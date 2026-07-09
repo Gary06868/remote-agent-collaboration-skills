@@ -33,6 +33,7 @@ Because there is no runtime code, tests focus on static protocol contracts and e
 | TP-011 | Install idempotency | Verify repeated copy installs remove stale files, avoid nested Skill dirs, preserve unrelated Skills, and keep Lead references. | Temporary install directory tests. |
 | TP-012 | CI | Verify GitHub Actions runs tests on push and pull_request for Ubuntu and Windows. | Workflow contract test. |
 | TP-013 | Plugin distribution | Verify one Codex Plugin bundles both Skills, the marketplace metadata is parseable, README uses plugin-first install, no hooks/custom collaboration CLI/server are reintroduced, and manual fallback paths use `.agents/skills`. | Plugin manifest, marketplace, install-report, archive, privacy, BOM, and docs contract tests. |
+| TP-014 | Claude plugin distribution | Verify the native Claude Code plugin manifest and `.claude-plugin/marketplace.json` are parseable, reuse the same two bundled Skills, stay packaging-only (no hooks/MCP/CLI), and that both READMEs document the `/plugin` install path and the `/team-lead-collaboration` and `/team-member-collaboration` slash commands. | Claude plugin manifest, marketplace, and docs contract tests. |
 
 ## Automated Test Command
 
@@ -81,14 +82,15 @@ Resolved in the current Lite protocol:
 - Scope-overlap guidance now names common overlap cases: same path, same folder/module, broad module locks, and shared interfaces.
 - QA reject follow-up fixes are covered: the privacy scanner no longer treats diagnostic labels as Windows drive paths, public tests do not embed reconstructible private source terms, Actor Registry status semantics are defined, and multi-path scope canonicalization is canonical.
 - 0.6.0 release preparation keeps Lite Markdown-only while adding the Claude Code adapter, README homepage restructure, compatibility matrix, quick start, visual assets, and Plugin screenshots. It keeps the original Plugin icon/cover, does not add a video demo, does not claim native Claude plugin support, and adds no hooks/MCP/custom CLI/server/database/daemon/runtime permission surface.
+- 0.7.0 adds a native Claude Code plugin (`.claude-plugin/plugin.json`) and a Claude Code marketplace (`.claude-plugin/marketplace.json`) that reuse the existing bundled Skills, so Claude Code installs the same two Skills as the `/team-lead-collaboration` and `/team-member-collaboration` slash commands. The Claude plugin stays packaging-only: no hooks, MCP, custom CLI, server, database, or daemon. The `adapters/claude-code/` prompts remain as a no-install fallback.
 
 ## Execution Log
 
-- Status: executed for v0.6.0 release preparation on `main`.
+- Status: executed for v0.7.0 native Claude Code plugin release preparation.
 - Commands:
   - `python -m unittest discover -s tests -v`
   - `pytest tests -q`
 - Result:
-  - `python -m unittest discover -s tests -v`: PASS, 74 tests.
-  - `pytest tests -q`: PASS, 74 tests and 545 subtests.
-- Notes: `pytest` was not on the initial shell PATH on this Windows machine; `.venv\Scripts` was prepended to PATH before rerunning `pytest tests -q`. Current suite covers actor identity, Actor Registry status semantics, scope canonicalization, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, plugin packaging, repository marketplace metadata, archive contents, link checks, CI workflow, privacy scan, BOM scan, Claude Code adapter docs, README visual assets, and Plugin screenshots.
+  - `python -m unittest discover -s tests -v`: PASS, 84 tests.
+  - `pytest tests -q`: PASS, 84 tests and 570 subtests.
+- Notes: 0.7.0 adds `tests/test_claude_plugin_distribution.py` covering the native Claude Code plugin manifest, the `.claude-plugin/marketplace.json` catalog, packaging-only boundaries, and README documentation of the `/plugin` install path. Current suite also covers actor identity, Actor Registry status semantics, scope canonicalization, log/task/handoff semantic consistency, Remote Git Mode, real two-clone lock races, install docs, install idempotency, self-contained Lead templates, E2E report, Codex plugin packaging, repository marketplace metadata, archive contents, link checks, CI workflow, privacy scan, BOM scan, Claude Code adapter docs, README visual assets, and Plugin screenshots.

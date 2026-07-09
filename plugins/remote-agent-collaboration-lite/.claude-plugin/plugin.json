@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "remote-agent-collaboration-lite",
+  "displayName": "Remote Agent Collaboration Lite",
+  "version": "0.7.0",
+  "description": "Markdown collaboration for small human and AI teams. Installs two skills: team-lead-collaboration and team-member-collaboration.",
+  "author": {
+    "name": "Gary06868",
+    "url": "https://github.com/Gary06868"
+  },
+  "homepage": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+  "repository": "https://github.com/Gary06868/remote-agent-collaboration-skills",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "skills",
+    "collaboration",
+    "markdown",
+    "ai-agents",
+    "vibe-coding"
+  ]
+}
